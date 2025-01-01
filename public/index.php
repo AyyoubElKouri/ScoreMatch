@@ -127,7 +127,8 @@ $isLoggedIn = isset($_SESSION['user_id']);
                 require_once '../config/database.php';
 
                 // Récupérer les derniers matchs
-                $query = "SELECT * FROM matchs ORDER BY date DESC LIMIT 5";
+                $query = "SELECT * FROM matchs ORDER BY date_match DESC LIMIT 5"; 
+
                 $result = $pdo->query($query);
 
                 while ($match = $result->fetch(PDO::FETCH_ASSOC)) {
