@@ -18,7 +18,7 @@ $matchs = $pdo->query("
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Matchs de la Premier League</title>
+    <title>Matchs de botola pro inwi</title>
     <link rel="stylesheet" href="../bootstrap-5.3.3-dist/css/bootstrap.css">
 </head>
 <body>
@@ -44,7 +44,7 @@ $matchs = $pdo->query("
 <!-- Section des matchs -->
 <section class="py-5">
     <div class="container">
-        <h2 class="mb-4 text-center">Matchs de la Premier League</h2>
+        <h2 class="mb-4 text-center">Matchs de botola pro inwi</h2>
         <div class="row justify-content-center">
             <div class="col-md-8">
             <?php foreach ($matchs as $match) : ?>

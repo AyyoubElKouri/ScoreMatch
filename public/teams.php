@@ -1,6 +1,14 @@
-
 <?php
 session_start();
+require_once '../config/database.php'; // Connexion à la base de données
+
+// Récupérer les équipes depuis la base de données
+try {
+    $stmt = $pdo->query("SELECT id, nom, logo FROM equipes ORDER BY nom");
+    $teams = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    die("Erreur : " . $e->getMessage());
+}
 ?>
 
 <!DOCTYPE html>
@@ -8,7 +16,7 @@ session_start();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Équipes - Premier League</title>
+    <title>Équipes - Botola Pro Inwi</title>
     <link rel="stylesheet" href="../bootstrap-5.3.3-dist/css/bootstrap.css">
 </head>
 <body>
@@ -31,44 +39,38 @@ session_start();
     </div>
 </nav>
 
-
-
-
-<!-- Section des équipes en format vertical -->
+<!-- Section des équipes -->
 <section class="py-5">
     <div class="container">
-        <h2 class="mb-4 text-center">Équipes de la Premier League</h2>
+        <h2 class="mb-4 text-center">Équipes de Botola Pro Inwi</h2>
         <div class="row justify-content-center">
             <div class="col-md-6">
                 <?php
-                // Liste statique des équipes de Premier League
-                $teams = [
-                    ["nom" => "Liverpool", "logo" => "../public/assets/images/Liverpool-FC-logo.png", "lien" => "team.php?team=liverpool"],
-                    ["nom" => "Arsenal", "logo" => "../public/assets/images/logo_ars.png", "lien" => "team.php?team=arsenal"],
-                    ["nom" => "Manchester City", "logo" => "../public/assets/images/Manchester-City-FC-logo.png", "lien" => "team.php?team=manchestercity"],
-                    ["nom" => "Manchester United", "logo" => "../public/assets/images//Manchester-United-FC-logo.png", "lien" => "team.php?team=manunited"],
-                    ["nom" => "Tottenham", "logo" => "../public/assets/images/logo_totnham.png", "lien" => "team.php?team=tottenham"],
-                    ["nom" => "Chelsea", "logo" => "../public/assets/images/logo_chelse.png", "lien" => "team.php?team=chelsea"]
-                ];
-
-                // Affichage vertical des équipes
-                foreach ($teams as $team) {
-                    echo '<div class="card mb-3 shadow">';
-                    echo '<div class="row g-0 align-items-center">';
-                    echo '<div class="col-md-4 text-center">';
-                    echo '<img src="' . htmlspecialchars($team["logo"]) . '" class="img-fluid rounded-start p-3" alt="' . htmlspecialchars($team["nom"]) . '" style="max-width: 100px;">';
-                    echo '</div>';
-                    echo '<div class="col-md-8">';
-                    echo '<div class="card-body">';
-                    echo '<h5 class="card-title">' . htmlspecialchars($team["nom"]) . '</h5>';
-                    echo '<a href="' . htmlspecialchars($team["lien"]) . '" class="btn btn-primary">Voir l’équipe</a>';
-                    echo '</div>';
-                    echo '</div>';
-                    echo '</div>';
-                    echo '</div>';
+                if (!empty($teams)) {
+                    foreach ($teams as $team) {
+                        echo '<div class="card mb-3 shadow">';
+                        echo '<div class="row g-0 align-items-center">';
+                        echo '<div class="col-md-4 text-center">';
+                        echo '<img src="' . htmlspecialchars($team["logo"]) . '" class="img-fluid rounded-start p-3" alt="' . htmlspecialchars($team["nom"]) . '" style="max-width: 100px;">';
+                        echo '</div>';
+                        echo '<div class="col-md-8">';
+                        echo '<div class="card-body">';
+                        echo '<h5 class="card-title">' . htmlspecialchars($team["nom"]) . '</h5>';
+                        echo '<a href="team_details.php?id=' . $team["id"] . '" class="btn btn-primary">Voir Détails</a>';
+                        echo '</div>';
+                        echo '</div>';
+                        echo '</div>';
+                        echo '</div>';
+                    }
+                } else {
+                    echo '<p class="text-center">Aucune équipe trouvée.</p>';
                 }
                 ?>
             </div>
         </div>
     </div>
 </section>
+
+<script src="../bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

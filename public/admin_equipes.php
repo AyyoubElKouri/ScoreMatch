@@ -1,4 +1,7 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 session_start();
 require_once '../config/database.php';
 
@@ -13,17 +16,30 @@ $equipes = $pdo->query("SELECT * FROM equipes ORDER BY nom")->fetchAll(PDO::FETC
 
 // Ajouter une équipe
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ajouter_equipe'])) {
-    $nom = $_POST['nom'];
-    $entraineur = $_POST['entraineur'];
-    $description = $_POST['description'];
-    $logo = $_POST['logo'];  // Stocke le chemin du logo
+  $nom = trim($_POST['nom']);
+  $entraineur = trim($_POST['entraineur']);
+  $description = trim($_POST['description']);
 
-    $stmt = $pdo->prepare("INSERT INTO equipes (nom, entraineur, description, logo) VALUES (?, ?, ?, ?)");
-    $stmt->execute([$nom, $entraineur, $description, $logo]);
+  // Gestion du fichier image
+  if (isset($_FILES['logo']) && $_FILES['logo']['error'] == 0) {
+      $dossier = "assets/images/";
+      $fichier = basename($_FILES['logo']['name']);
+      $chemin_logo = $dossier . $fichier;
+      move_uploaded_file($_FILES['logo']['tmp_name'], $chemin_logo);
+  } else {
+      $chemin_logo = "default.png"; // Image par défaut si aucun fichier
+  }
 
-    header("Location: admin_equipes.php");
-    exit();
+  try {
+      $stmt = $pdo->prepare("INSERT INTO equipes (nom, entraineur, description, logo) VALUES (?, ?, ?, ?)");
+      $stmt->execute([$nom, $entraineur, $description, $chemin_logo]);
+      header("Location: admin_equipes.php");
+      exit();
+  } catch (PDOException $e) {
+      echo "Erreur : " . $e->getMessage();
+  }
 }
+
 
 // Supprimer une équipe
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['supprimer_equipe'])) {
@@ -32,7 +48,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['supprimer_equipe'])) {
     header("Location: admin_equipes.php");
     exit();
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -88,25 +103,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['supprimer_equipe'])) {
                                 <h5 class="modal-title">Modifier l'Équipe</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
-                            <form method="post">
-                                <div class="modal-body">
-                                    <input type="hidden" name="equipe_id" value="<?= $equipe['id'] ?>">
-                                    <label>Nom</label>
-                                    <input type="text" name="nom" value="<?= htmlspecialchars($equipe['nom']) ?>" class="form-control" required>
+                            <form method="post" enctype="multipart/form-data">
+    <input type="hidden" name="equipe_id" value="<?= $equipe['id'] ?>">
+    <label>Nom</label>
+    <input type="text" name="nom" value="<?= htmlspecialchars($equipe['nom']) ?>" class="form-control" required>
 
-                                    <label>Entraîneur</label>
-                                    <input type="text" name="entraineur" value="<?= htmlspecialchars($equipe['entraineur']) ?>" class="form-control" required>
+    <label>Entraîneur</label>
+    <input type="text" name="entraineur" value="<?= htmlspecialchars($equipe['entraineur']) ?>" class="form-control" required>
 
-                                    <label>Description</label>
-                                    <textarea name="description" class="form-control"><?= htmlspecialchars($equipe['description']) ?></textarea>
+    <label>Description</label>
+    <textarea name="description" class="form-control"><?= htmlspecialchars($equipe['description']) ?></textarea>
 
-                                    <label>Logo</label>
-                                    <input type="text" name="logo" value="<?= htmlspecialchars($equipe['logo']) ?>" class="form-control">
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="submit" name="modifier_equipe" class="btn btn-primary">Enregistrer</button>
-                                </div>
-                            </form>
+    <label>Logo</label>
+    <input type="file" name="logo" class="form-control">
+
+    <button type="submit" name="modifier_equipe" class="btn btn-primary">Enregistrer</button>
+</form>
+
                         </div>
                     </div>
                 </div>
@@ -123,7 +136,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['supprimer_equipe'])) {
                 <h5 class="modal-title">Ajouter une Équipe</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="post">
+            <form method="post" enctype="multipart/form-data">
                 <div class="modal-body">
                     <label>Nom</label>
                     <input type="text" name="nom" class="form-control" required>
