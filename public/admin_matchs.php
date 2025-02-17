@@ -13,24 +13,29 @@ $equipes = $pdo->query("SELECT id, nom FROM equipes ORDER BY nom")->fetchAll(PDO
 
 // Récupération des matchs pour affichage
 $matchs = $pdo->query("
-    SELECT m.id, e1.nom AS equipe1, e2.nom AS equipe2, m.date_match
+    SELECT m.id, e1.nom AS equipe1, e2.nom AS equipe2, m.date_match, m.heure
     FROM matches m
     JOIN equipes e1 ON m.equipe1_id = e1.id
     JOIN equipes e2 ON m.equipe2_id = e2.id
     ORDER BY m.date_match DESC
 ")->fetchAll(PDO::FETCH_ASSOC);
 
+
+
 // Ajouter un match
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ajouter_match'])) {
     $equipe1_id = $_POST['equipe1'];
     $equipe2_id = $_POST['equipe2'];
     $date_match = $_POST['date_match'];
+    $heure_match = isset($_POST['heure']) ? trim($_POST['heure']) : null;
 
     if ($equipe1_id == $equipe2_id) {
         $error = "Une équipe ne peut pas jouer contre elle-même.";
+    } elseif (empty($heure_match)) {
+        $error = "L'heure du match est obligatoire.";
     } else {
-        $stmt = $pdo->prepare("INSERT INTO matchs (equipe1_id, equipe2_id, date_match) VALUES (?, ?, ?)");
-        if ($stmt->execute([$equipe1_id, $equipe2_id, $date_match])) {
+        $stmt = $pdo->prepare("INSERT INTO matches (equipe1_id, equipe2_id, date_match, heure) VALUES (?, ?, ?, ?)");
+        if ($stmt->execute([$equipe1_id, $equipe2_id, $date_match, $heure_match])) {
             header("Location: admin_matchs.php");
             exit();
         } else {
@@ -41,12 +46,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ajouter_match'])) {
 
 // Supprimer un match
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['supprimer_match'])) {
-    $stmt = $pdo->prepare("DELETE FROM matchs WHERE id = ?");
+    $stmt = $pdo->prepare("DELETE FROM matches WHERE id = ?");
     $stmt->execute([$_POST['match_id']]);
     header("Location: admin_matchs.php");
     exit();
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -54,10 +58,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['supprimer_match'])) {
 <head>
     <meta charset="UTF-8">
     <title>Gestion des Matchs</title>
-    <link rel="stylesheet" href="../bootstrap-5.3.3-dist/css/bootstrap.css">
-    <script src="../bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body class="bg-light">
+  
 <div class="container mt-5">
     <h2 class="text-center">Gestion des Matchs</h2>
 
@@ -88,11 +95,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['supprimer_match'])) {
                     <td><?= $index + 1 ?></td>
                     <td><?= htmlspecialchars($match['equipe1']) ?></td>
                     <td><?= htmlspecialchars($match['equipe2']) ?></td>
-                    <td><?= htmlspecialchars($match['date_match']) ?></td>
+                    <td><?= htmlspecialchars($match['date_match'] . ' ' . $match['heure']) ?></td>
                     <td>
-                        <!-- Bouton Modifier -->
-                        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editMatchModal<?= $match['id'] ?>">Modifier</button>
-                        
                         <!-- Bouton Supprimer -->
                         <form method="post" class="d-inline">
                             <input type="hidden" name="match_id" value="<?= $match['id'] ?>">
@@ -100,29 +104,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['supprimer_match'])) {
                         </form>
                     </td>
                 </tr>
-
-                <!-- Modal Modifier -->
-                <div class="modal fade" id="editMatchModal<?= $match['id'] ?>" tabindex="-1">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Modifier le Match</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <form method="post">
-                                <div class="modal-body">
-                                    <label>Nouvelle Date & Heure</label>
-                                    <input type="datetime-local" name="new_date_match" class="form-control" required>
-                                    <input type="hidden" name="match_id" value="<?= $match['id'] ?>">
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="submit" name="modifier_match" class="btn btn-primary">Enregistrer</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
             <?php endforeach; ?>
         </tbody>
     </table>
@@ -145,7 +126,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['supprimer_match'])) {
                             <option value="<?= $equipe['id'] ?>"><?= htmlspecialchars($equipe['nom']) ?></option>
                         <?php endforeach; ?>
                     </select>
-                    
+
                     <label>Équipe 2</label>
                     <select name="equipe2" class="form-control" required>
                         <option value="">-- Sélectionner --</option>
@@ -153,9 +134,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['supprimer_match'])) {
                             <option value="<?= $equipe['id'] ?>"><?= htmlspecialchars($equipe['nom']) ?></option>
                         <?php endforeach; ?>
                     </select>
-                    
-                    <label>Date & Heure</label>
-                    <input type="datetime-local" name="date_match" class="form-control" required>
+
+                    <label>Date du Match</label>
+                    <input type="date" name="date_match" class="form-control" required>
+
+                    <label>Heure du Match</label>
+                    <input type="time" name="heure" class="form-control" required>
                 </div>
                 <div class="modal-footer">
                     <button type="submit" name="ajouter_match" class="btn btn-success">Ajouter</button>

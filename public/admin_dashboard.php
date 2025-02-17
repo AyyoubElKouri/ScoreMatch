@@ -9,7 +9,7 @@ require_once '../config/database.php';
 
 // Récupérer les statistiques
 $nb_equipes = $pdo->query("SELECT COUNT(*) FROM equipes")->fetchColumn();
-$nb_matchs = $pdo->query("SELECT COUNT(*) FROM matchs")->fetchColumn();
+$nb_matchs = $pdo->query("SELECT COUNT(*) FROM matches")->fetchColumn();
 $nb_staff = $pdo->query("SELECT COUNT(*) FROM staff")->fetchColumn();
 $nb_joueurs = $pdo->query("SELECT COUNT(*) FROM joueurs")->fetchColumn();
 ?>
@@ -186,6 +186,19 @@ $nb_joueurs = $pdo->query("SELECT COUNT(*) FROM joueurs")->fetchColumn();
         </div>
     </div>
 </div>
+<script>
+    function updateMatchCount() {
+        fetch("get_match_count.php")
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("match-count").innerText = data.count;
+            })
+            .catch(error => console.error("Erreur lors de la récupération des matchs :", error));
+    }
+
+    // Mettre à jour toutes les 5 secondes
+    setInterval(updateMatchCount, 5000);
+</script>
 
 </body>
 </html>

@@ -1,5 +1,16 @@
 <?php
 session_start();
+require_once '../config/database.php';
+
+// Récupérer tous les matchs depuis la base de données
+$matchs = $pdo->query("
+    SELECT m.id, e1.nom AS equipe1, e2.nom AS equipe2, e1.logo AS logo1, e2.logo AS logo2, m.date_match, m.heure 
+    FROM matches m
+    JOIN equipes e1 ON m.equipe1_id = e1.id
+    JOIN equipes e2 ON m.equipe2_id = e2.id
+    ORDER BY m.date_match DESC
+")->fetchAll(PDO::FETCH_ASSOC);
+
 ?>
 
 <!DOCTYPE html>
@@ -36,71 +47,36 @@ session_start();
         <h2 class="mb-4 text-center">Matchs de la Premier League</h2>
         <div class="row justify-content-center">
             <div class="col-md-8">
-                <?php
-                // Liste des matchs statiques de la Premier League
-                $matches = [
-                    [
-                        "date" => "17 Février 2025",
-                        "heure" => "18:30",
-                        "equipe1" => "Liverpool",
-                        "logo1" => "../public/assets/images/Liverpool-FC-logo.png",
-                        "score" => "VS",
-                        "equipe2" => "Chelsea",
-                        "logo2" => "../public/assets/images/logo_chelse.png",
-                        "lien" => "#"
-                    ],
-                    [
-                        "date" => "18 Février 2025",
-                        "heure" => "20:00",
-                        "equipe1" => "Manchester United",
-                        "logo1" => "../public/assets/images/Manchester-United-FC-logo.png",
-                        "score" => "VS",
-                        "equipe2" => "Arsenal",
-                        "logo2" => "../public/assets/images/Arsenal-FC-logo.png",
-                        "lien" => "#"
-                    ],
-                    [
-                        "date" => "19 Février 2025",
-                        "heure" => "19:45",
-                        "equipe1" => "Tottenham",
-                        "logo1" => "../public/assets/images/Tottenham-Hotspur-logo.png",
-                        "score" => "VS",
-                        "equipe2" => "Manchester City",
-                        "logo2" => "../public/assets/images/Manchester-City-FC-logo.png",
-                        "lien" => "#"
-                    ]
-                ];
+            <?php foreach ($matchs as $match) : ?>
+    <div class="card mb-4 shadow">
+        <div class="card-body text-center">
+            <p class="text-muted mb-1"><?= htmlspecialchars($match['date_match']) . " | " . htmlspecialchars($match['heure']) ?></p>
+            <div class="d-flex align-items-center justify-content-center">
+                <div class="me-3 text-center">
+                    <img src="<?= htmlspecialchars($match['logo1']) ?>" alt="Logo <?= htmlspecialchars($match['equipe1']) ?>" class="img-fluid" style="width: 60px;">
+                    <p class="mt-2"><strong><?= htmlspecialchars($match['equipe1']) ?></strong></p>
+                </div>
+                <h3 class="mx-3">VS</h3>
+                <div class="ms-3 text-center">
+                    <img src="<?= htmlspecialchars($match['logo2']) ?>" alt="Logo <?= htmlspecialchars($match['equipe2']) ?>" class="img-fluid" style="width: 60px;">
+                    <p class="mt-2"><strong><?= htmlspecialchars($match['equipe2']) ?></strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+<?php endforeach; ?>
 
-                // Affichage des matchs sous forme de cartes
-                foreach ($matches as $match) {
-                    echo '<div class="card mb-4 shadow">';
-                    echo '<div class="card-body text-center">';
-                    echo '<p class="text-muted mb-1">' . htmlspecialchars($match["date"]) . ' | ' . htmlspecialchars($match["heure"]) . '</p>';
-                    echo '<div class="d-flex align-items-center justify-content-center">';
-                    echo '<div class="me-3 text-center">';
-                    echo '<img src="' . htmlspecialchars($match["logo1"]) . '" class="img-fluid" alt="' . htmlspecialchars($match["equipe1"]) . '" style="width: 60px;">';
-                    echo '<p class="mt-2"><strong>' . htmlspecialchars($match["equipe1"]) . '</strong></p>';
-                    echo '</div>';
-                    echo '<h3 class="mx-3">' . htmlspecialchars($match["score"]) . '</h3>';
-                    echo '<div class="ms-3 text-center">';
-                    echo '<img src="' . htmlspecialchars($match["logo2"]) . '" class="img-fluid" alt="' . htmlspecialchars($match["equipe2"]) . '" style="width: 60px;">';
-                    echo '<p class="mt-2"><strong>' . htmlspecialchars($match["equipe2"]) . '</strong></p>';
-                    echo '</div>';
-                    echo '</div>';
-                    echo '<a href="' . htmlspecialchars($match["lien"]) . '" class="btn btn-primary mt-3">Voir Détails</a>';
-                    echo '</div>';
-                    echo '</div>';
-                }
-                ?>
+
             </div>
         </div>
     </div>
 </section>
 
 <!-- Pied de page -->
-<footer class="bg-dark text-white text-center py-3">
-    <p>&copy; 2025 Gestion des Matchs - Tous droits réservés.</p>
+<footer class="bg-dark text-white text-center py-3 mt-auto">
+    <p class="mb-0">&copy; 2025 Gestion des Matchs - Tous droits réservés.</p>
 </footer>
+
 
 <!-- Bootstrap JS -->
 <script src="../bootstrap-5.3.3-dist/js/bootstrap.js"></script>
