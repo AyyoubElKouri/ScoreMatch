@@ -54,50 +54,49 @@ $isLoggedIn = isset($_SESSION['user_id']);
     <!-- Section Publications -->
 <section class="py-5 bg-light">
     <div class="container">
-        <h2 class="mb-4">Publications sur la Premier League</h2>
+        <h2 class="mb-4">Publications sur botola inwi pro</h2>
         <div class="row">
             <?php
             // Tableau de publications statiques
             $publications = [
                 [
-                    "titre" => "Manchester City domine la Premier League",
-                    "contenu" => "Avec une performance impressionnante cette saison, Manchester City se positionne comme le favori du championnat.",
-                    "image" => "../public/assets/images/manCirty.png", // Remplace avec une image valide
+                    "titre" => "Wydad Casablanca en tête du championnat",
+                    "contenu" => "Le Wydad continue de dominer la Botola Pro Inwi avec une série impressionnante de victoires.",
+                    "image" => "../public/assets/images/waydad.png", // Remplace avec une image valide
                     "lien" => "#"
                 ],
                 [
-                    "titre" => "Arsenal en pleine forme",
-                    "contenu" => "Les Gunners affichent un jeu spectaculaire et se battent pour le titre cette saison.",
-                    "image" => "../public/assets/images/arsenal.png",
+                    "titre" => "Raja Casablanca prêt pour le sacre ?",
+                    "contenu" => "Le Raja Club Athletic montre une belle forme cette saison et se positionne comme un sérieux prétendant au titre.",
+                    "image" => "../public/assets/images/raja.png",
                     "lien" => "#"
                 ],
                 [
-                    "titre" => "Liverpool et sa quête du titre",
-                    "contenu" => "Les Reds continuent de briller en Premier League avec une attaque impressionnante.",
-                    "image" => "../public/assets/images/liverpool.png",
+                    "titre" => "RS Berkane impressionne en championnat",
+                    "contenu" => "La Renaissance Sportive de Berkane réalise une excellente saison et vise les premières places du classement.",
+                    "image" => "../public/assets/images/barkan.png",
                     "lien" => "#"
                 ],
                 [
-                    "titre" => "Manchester United veut retrouver sa gloire",
-                    "contenu" => "Les Red Devils cherchent à retrouver leur statut de club dominant en Premier League.",
-                    "image" => "../public/assets/images/manUnited.png",
+                    "titre" => "FUS Rabat surprend ses adversaires",
+                    "contenu" => "Le Fath Union Sport de Rabat s'impose comme un sérieux challenger cette saison.",
+                    "image" => "../public/assets/images/fus.png",
                     "lien" => "#"
                 ],
                 [
-                    "titre" => "Tottenham en quête d’un trophée",
-                    "contenu" => "Les Spurs espèrent briser leur malédiction et remporter un titre majeur cette saison.",
-                    "image" => "../public/assets/images/totnham.png",
+                    "titre" => "Moghreb Tétouan de retour en force",
+                    "contenu" => "Le MAT affiche de belles performances et espère se maintenir dans le haut du tableau.",
+                    "image" => "../public/assets/images/tetouan.png",
                     "lien" => "#"
                 ],
                 [
-                    "titre" => "Chelsea en pleine reconstruction",
-                    "contenu" => "Les Blues travaillent sur une nouvelle ère après des changements majeurs dans l’effectif.",
-                    "image" => "../public/assets/images/chelse.png",
+                    "titre" => "HUSA Agadir vise le haut du classement",
+                    "contenu" => "Hassania Agadir mise sur une dynamique positive pour s’imposer cette saison.",
+                    "image" => "../public/assets/images/agadir.png",
                     "lien" => "#"
                 ]
-
-                
             ];
+            
 
             // Affichage des publications
             foreach ($publications as $publication) {
