@@ -116,26 +116,7 @@ $nb_joueurs = $pdo->query("SELECT COUNT(*) FROM joueurs")->fetchColumn();
     <a href="admin_matchs.php"><i class="fas fa-futbol"></i> Gérer les Matchs</a>
     <a href="admin_staff.php"><i class="fas fa-user-tie"></i> Gérer le Staff</a>
     <a href="admin_joueurs.php"><i class="fas fa-user"></i> Gérer les Joueurs</a>
-    <a href="admin_admins.php"><i class="fas fa-user-shield"></i> Gérer les Admins</a>
-    
-
-    <!-- Gérer les joueurs avec un menu déroulant -->
-    <a href="#" class="dropdown-btn"><i class="fas fa-user"></i> Gérer les Joueurs <i class="fas fa-chevron-down float-end"></i></a>
-    <div class="dropdown-container">
-        <a href="ajouter_joueur.php"><i class="fas fa-plus-circle"></i> Ajouter un Joueur</a>
-        <a href="modifier_joueur.php"><i class="fas fa-edit"></i> Modifier un Joueur</a>
-        <a href="supprimer_joueur.php"><i class="fas fa-trash"></i> Supprimer un Joueur</a>
-        <a href="transferer_joueur.php"><i class="fas fa-exchange-alt"></i> Transférer un Joueur</a>
-    </div>
-
-    <!-- Nouveau menu pour la gestion des Admins Tournois -->
-    <a href="#" class="dropdown-btn"><i class="fas fa-user-shield"></i> Gérer les Admins Tournois <i class="fas fa-chevron-down float-end"></i></a>
-    <div class="dropdown-container">
-        <a href="creer_admin_tournoi.php"><i class="fas fa-user-plus"></i> Créer un Admin Tournoi</a>
-        <a href="supprimer_admin_tournoi.php"><i class="fas fa-user-minus"></i> Supprimer un Admin Tournoi</a>
-        <a href="modifier_admin_tournoi.php"><i class="fas fa-user-edit"></i> Modifier un Admin Tournoi</a>
-    </div>
-
+    <a href="admin_admins.php"><i class="fas fa-user-shield"></i> Gérer les Admins tournous</a>
     <hr class="text-white">
     <a href="logout.php" class="text-danger"><i class="fas fa-sign-out-alt"></i> Se Déconnecter</a>
 </div>
