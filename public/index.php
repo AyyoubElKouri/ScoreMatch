@@ -30,6 +30,37 @@ $matchs_du_jour = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <!-- Lien Bootstrap CSS -->
     <link rel="stylesheet" href="../bootstrap-5.3.3-dist/css/bootstrap.css">
+    <style>
+    .match-container {
+        display: flex;
+        overflow-x: auto; /* Permet le défilement horizontal */
+        white-space: nowrap;
+        gap: 15px;
+        padding: 10px;
+        scroll-snap-type: x mandatory;
+    }
+
+    .match-card {
+        flex: 0 0 auto; /* Empêche les cartes de se réduire */
+        width: 310px; /* Taille de chaque carte */
+        height: 320px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        scroll-snap-align: start;
+    }
+
+    /* Cache la barre de scroll sur certains navigateurs */
+    .match-container::-webkit-scrollbar {
+        display: none;
+    }
+
+    .match-container {
+        -ms-overflow-style: none; /* IE et Edge */
+        scrollbar-width: none; /* Firefox */
+    }
+</style>
+
 </head>
 <body>
 
@@ -64,7 +95,7 @@ $matchs_du_jour = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <div class="row justify-content-center">
         <?php foreach ($matchs_du_jour as $match): ?>
             <div class="col-md-4">
-                <div class="card mb-3 shadow" style="width: 320px; height: 400px; display: flex; align-items: center; justify-content: center;">
+                <div class="card mb-3 shadow" style="width: 310px; height: 320px; display: flex; align-items: center; justify-content: center;">
                     <div class="card-body text-center">
                         <p class="text-muted"><strong>Heure:</strong> <?= date('H:i', strtotime($match['heure'])) ?></p> 
                         <div class="d-flex justify-content-center align-items-center">
