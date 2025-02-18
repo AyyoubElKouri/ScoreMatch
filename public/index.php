@@ -1,6 +1,24 @@
 <?php
 session_start();
 $isLoggedIn = isset($_SESSION['user_id']);
+
+require_once '../config/database.php';
+
+// Récupérer les matchs du jour
+$today = date('Y-m-d');
+$query = "SELECT m.*, 
+                 e1.nom AS equipe1, e2.nom AS equipe2, 
+                 e1.logo AS logo1, e2.logo AS logo2 
+          FROM matches m
+          JOIN equipes e1 ON m.equipe1_id = e1.id
+          JOIN equipes e2 ON m.equipe2_id = e2.id
+          WHERE DATE(m.date_match) = ?";
+$stmt = $pdo->prepare($query);
+$stmt->execute([$today]);
+$matchs_du_jour = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -41,15 +59,40 @@ $isLoggedIn = isset($_SESSION['user_id']);
     </nav>
 
     <!-- Section principale -->
-    <header class="bg-light text-center py-5">
-        <div class="container">
-            <h1 class="display-4">Bienvenue sur l'application de gestion des matchs de football</h1>
-            <p class="lead">Suivez vos équipes préférées et consultez les derniers matchs !</p>
-            <?php if (!$isLoggedIn): ?>
-                <a href="register.php" class="btn btn-lg btn-primary">Créer un compte</a>
-            <?php endif; ?>
-        </div>
-    </header>
+    <?php if (!empty($matchs_du_jour)): ?>
+        <?php if (!empty($matchs_du_jour)): ?>
+    <div class="row justify-content-center">
+        <?php foreach ($matchs_du_jour as $match): ?>
+            <div class="col-md-4">
+                <div class="card mb-3 shadow" style="width: 320px; height: 400px; display: flex; align-items: center; justify-content: center;">
+                    <div class="card-body text-center">
+                        <p class="text-muted"><strong>Heure:</strong> <?= date('H:i', strtotime($match['heure'])) ?></p> 
+                        <div class="d-flex justify-content-center align-items-center">
+                            <div class="text-center me-3">
+                                <img src="<?= htmlspecialchars($match['logo1']) ?>" alt="<?= htmlspecialchars($match['equipe1']) ?>" width="70">
+                                <p class="mt-2"><strong><?= htmlspecialchars($match['equipe1']) ?></strong></p>
+                            </div>
+                            <h3 class="mx-3">VS</h3>
+                            <div class="text-center ms-3">
+                                <img src="<?= htmlspecialchars($match['logo2']) ?>" alt="<?= htmlspecialchars($match['equipe2']) ?>" width="70">
+                                <p class="mt-2"><strong><?= htmlspecialchars($match['equipe2']) ?></strong></p>
+                            </div>
+                        </div>
+                        <a href="match_details.php?id=<?= $match['id'] ?>" class="btn btn-primary btn-sm mt-3">Voir Détails</a>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+<?php else: ?>
+    <p class="text-muted">Aucun match prévu pour aujourd'hui.</p>
+<?php endif; ?>
+
+<?php else: ?>
+    <p class="text-muted">Aucun match prévu pour aujourd'hui.</p>
+<?php endif; ?>
+
+
 
     <!-- Section Publications -->
 <section class="py-5 bg-light">
