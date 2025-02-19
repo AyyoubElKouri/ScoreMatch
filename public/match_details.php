@@ -47,6 +47,37 @@ $stmt = $pdo->prepare($query);
 $stmt->execute([$match['equipe1'], $match['equipe2']]);
 $matchs_par_equipe = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
+<?php
+
+    // Récupérer les joueurs de l'équipe 1
+    try {
+      // Récupérer les joueurs de l'équipe 1 du match
+      $stmt_joueurs_equipe1 = $pdo->prepare("
+          SELECT j.nom, j.prenom, j.age, j.position
+          FROM joueurs j
+          JOIN matches m ON j.equipe_id = m.equipe1_id
+          WHERE m.id = ?
+          ORDER BY j.position
+      ");
+      $stmt_joueurs_equipe1->execute([$match_id]);
+      $joueurs_equipe1 = $stmt_joueurs_equipe1->fetchAll(PDO::FETCH_ASSOC);
+  
+      // Récupérer les joueurs de l'équipe 2 du match
+      $stmt_joueurs_equipe2 = $pdo->prepare("
+          SELECT j.nom, j.prenom, j.age, j.position
+          FROM joueurs j
+          JOIN matches m ON j.equipe_id = m.equipe2_id
+          WHERE m.id = ?
+          ORDER BY j.position
+      ");
+      $stmt_joueurs_equipe2->execute([$match_id]);
+      $joueurs_equipe2 = $stmt_joueurs_equipe2->fetchAll(PDO::FETCH_ASSOC);
+  } catch (PDOException $e) {
+      die("Erreur lors de la récupération des joueurs : " . $e->getMessage());
+  }
+  
+?>
+
 
 <!DOCTYPE html>
 <html lang="fr">
@@ -125,6 +156,79 @@ $matchs_par_equipe = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
 </section>
+
+<!-- Liste des joueurs de chaque équipe -->
+<!-- Liste des joueurs de chaque équipe -->
+<section class="py-5">
+    <div class="container">
+        <h3 class="text-center mb-4">👥 Joueurs des Équipes</h3>
+
+        <div class="row">
+            <!-- Joueurs de l'équipe 1 -->
+            <div class="col-md-6">
+                <h4 class="text-center"><?= htmlspecialchars($match['equipe1']) ?></h4>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>Âge</th>
+                                <th>Position</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($joueurs_equipe1)) : ?>
+                                <?php foreach ($joueurs_equipe1 as $joueur) : ?>
+                                    <tr>
+                                        <td><?= htmlspecialchars($joueur["nom"]) ?></td>
+                                        <td><?= htmlspecialchars($joueur["prenom"]) ?></td>
+                                        <td><?= htmlspecialchars($joueur["age"]) ?></td>
+                                        <td><?= htmlspecialchars($joueur["position"]) ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else : ?>
+                                <tr><td colspan="4" class="text-center">Aucun joueur trouvé.</td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Joueurs de l'équipe 2 -->
+            <div class="col-md-6">
+                <h4 class="text-center"><?= htmlspecialchars($match['equipe2']) ?></h4>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>Âge</th>
+                                <th>Position</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($joueurs_equipe2)) : ?>
+                                <?php foreach ($joueurs_equipe2 as $joueur) : ?>
+                                    <tr>
+                                        <td><?= htmlspecialchars($joueur["nom"]) ?></td>
+                                        <td><?= htmlspecialchars($joueur["prenom"]) ?></td>
+                                        <td><?= htmlspecialchars($joueur["age"]) ?></td>
+                                        <td><?= htmlspecialchars($joueur["position"]) ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else : ?>
+                                <tr><td colspan="4" class="text-center">Aucun joueur trouvé.</td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 
 <!-- Pied de page -->
 <footer class="bg-dark text-white text-center py-3">

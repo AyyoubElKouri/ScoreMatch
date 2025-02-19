@@ -28,6 +28,24 @@ try {
 }
 
 ?>
+<?php
+try {
+    // Requête pour récupérer les joueurs de l'équipe
+    $stmt_joueurs = $pdo->prepare("
+        SELECT nom, prenom, age, position 
+        FROM joueurs 
+        WHERE equipe_id = ?
+        ORDER BY position
+    ");
+    //exécution de la requête
+    $stmt_joueurs->execute([$id]);
+    //récupération des résultats
+    $joueurs = $stmt_joueurs->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    die("Erreur lors de la récupération des joueurs : " . $e->getMessage());
+}
+?>
+
 
 <!DOCTYPE html>
 <html lang="fr">
@@ -94,6 +112,42 @@ try {
         </div>
     </div>
 <?php endif; ?>
+
+<!-- Liste des joueurs de l'équipe -->
+<?php if (!empty($joueurs)) : ?>
+    <section class="py-5">
+        <div class="container">
+            <h3 class="text-center mb-4">👕 Joueurs de l'équipe</h3>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Nom</th>
+                            <th>Prénom</th>
+                            <th>Âge</th>
+                            <th>Position</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($joueurs as $joueur) : ?>
+                            <tr>
+                                <td><?= htmlspecialchars($joueur["nom"]) ?></td>
+                                <td><?= htmlspecialchars($joueur["prenom"]) ?></td>
+                                <td><?= htmlspecialchars($joueur["age"]) ?></td>
+                                <td><?= htmlspecialchars($joueur["position"]) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+<?php else : ?>
+    <div class="text-center py-3">
+        <p>Aucun joueur trouvé pour cette équipe.</p>
+    </div>
+<?php endif; ?>
+
 
 
 <script src="../bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js"></script>
