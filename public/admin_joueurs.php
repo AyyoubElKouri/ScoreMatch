@@ -32,25 +32,33 @@ if (isset($_GET['edit'])) {
 }
 
 // **Ajouter ou modifier un joueur**
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $nom = $_POST['nom'];
-    $prenom = $_POST['prenom'];
-    $age = $_POST['age'];
-    $position = $_POST['position'];
-    $equipe_id = $_POST['equipe_id'];
+// **Ajouter ou modifier un joueur**
+if ($_SERVER["REQUEST_METHOD"] == "POST" && (isset($_POST['update']) || isset($_POST['add']))) {
+  $nom = isset($_POST['nom']) ? trim($_POST['nom']) : "";
+  $prenom = isset($_POST['prenom']) ? trim($_POST['prenom']) : "";
+  $age = isset($_POST['age']) ? intval($_POST['age']) : null;
+  $position = isset($_POST['position']) ? trim($_POST['position']) : "";
+  $equipe_id = isset($_POST['equipe_id']) ? intval($_POST['equipe_id']) : null;
 
-    if (isset($_POST['update'])) {  // **Modifier un joueur**
-        $id = $_POST['id'];
-        $stmt = $pdo->prepare("UPDATE joueurs SET nom = ?, prenom = ?, age = ?, position = ?, equipe_id = ? WHERE id = ?");
-        $stmt->execute([$nom, $prenom, $age, $position, $equipe_id, $id]);
-    } else {  // **Ajouter un joueur**
-        $stmt = $pdo->prepare("INSERT INTO joueurs (nom, prenom, age, position, equipe_id) VALUES (?, ?, ?, ?, ?)");
-        $stmt->execute([$nom, $prenom, $age, $position, $equipe_id]);
-    }
+  if (empty($nom) || empty($prenom) || empty($position) || !$equipe_id) {
+      $_SESSION['message'] = "❌ Tous les champs sont obligatoires.";
+      header("Location: admin_joueurs.php");
+      exit();
+  }
 
-    header("Location: admin_joueurs.php");
-    exit();
+  if (isset($_POST['update'])) {  // **Modifier un joueur**
+      $id = intval($_POST['id']);
+      $stmt = $pdo->prepare("UPDATE joueurs SET nom = ?, prenom = ?, age = ?, position = ?, equipe_id = ? WHERE id = ?");
+      $stmt->execute([$nom, $prenom, $age, $position, $equipe_id, $id]);
+  } else {  // **Ajouter un joueur**
+      $stmt = $pdo->prepare("INSERT INTO joueurs (nom, prenom, age, position, equipe_id) VALUES (?, ?, ?, ?, ?)");
+      $stmt->execute([$nom, $prenom, $age, $position, $equipe_id]);
+  }
+
+  header("Location: admin_joueurs.php");
+  exit();
 }
+
 
 // **Supprimer un joueur**
 if (isset($_GET['delete'])) {
@@ -59,6 +67,57 @@ if (isset($_GET['delete'])) {
     header("Location: admin_joueurs.php");
     exit();
 }
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+  echo "<pre>";
+  print_r($_POST); // Afficher les données envoyées
+  echo "</pre>";
+}
+
+// Transférer un joueur à une autre équipe
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['transferer'])) {
+  if (!isset($_POST['joueur_id']) || !isset($_POST['nouvelle_equipe'])) {
+      $_SESSION['message'] = "❌ Erreur : Données manquantes pour le transfert.";
+      header("Location: admin_joueurs.php");
+      exit();
+  }
+
+  $joueur_id = intval($_POST['joueur_id']);
+  $nouvelle_equipe = intval($_POST['nouvelle_equipe']);
+
+  // Vérifier si le joueur existe
+  $stmt = $pdo->prepare("SELECT id FROM joueurs WHERE id = ?");
+  $stmt->execute([$joueur_id]);
+  if ($stmt->rowCount() === 0) {
+      $_SESSION['message'] = "❌ Erreur : Joueur introuvable.";
+      header("Location: admin_joueurs.php");
+      exit();
+  }
+
+  // Vérifier si la nouvelle équipe existe
+  $stmt = $pdo->prepare("SELECT id FROM equipes WHERE id = ?");
+  $stmt->execute([$nouvelle_equipe]);
+  if ($stmt->rowCount() === 0) {
+      $_SESSION['message'] = "❌ Erreur : Équipe invalide.";
+      header("Location: admin_joueurs.php");
+      exit();
+  }
+
+  // Mise à jour du joueur
+  $stmt = $pdo->prepare("UPDATE joueurs SET equipe_id = ? WHERE id = ?");
+  $stmt->execute([$nouvelle_equipe, $joueur_id]);
+
+  if ($stmt->rowCount() > 0) {
+      $_SESSION['message'] = "✅ Joueur transféré avec succès.";
+  } else {
+      $_SESSION['message'] = "⚠️ Aucun changement effectué.";
+  }
+
+  header("Location: admin_joueurs.php");
+  exit();
+}
+
+
 
 // **Récupérer tous les joueurs**
 $query = "
@@ -80,6 +139,12 @@ $joueurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <link rel="stylesheet" href="../bootstrap-5.3.3-dist/css/bootstrap.css">
 </head>
 <body>
+<?php if (isset($_SESSION['message'])) : ?>
+    <div class="alert alert-info text-center">
+        <?= $_SESSION['message']; unset($_SESSION['message']); ?>
+    </div>
+<?php endif; ?>
+
 
 <div class="container mt-5">
     <h2 class="text-center"><?= $edit_mode ? "Modifier un Joueur" : "Ajouter un Joueur" ?></h2>
@@ -127,6 +192,37 @@ $joueurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </button>
         <a href="admin_joueurs.php" class="btn btn-secondary">Annuler</a>
     </form>
+    <?php foreach ($joueurs as $joueur) : ?>
+    <!-- Modal de transfert -->
+    <div class="modal fade" id="transferModal<?= $joueur['id'] ?>" tabindex="-1" aria-labelledby="transferModalLabel<?= $joueur['id'] ?>" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="transferModalLabel<?= $joueur['id'] ?>">Transférer <?= htmlspecialchars($joueur['nom']) ?> <?= htmlspecialchars($joueur['prenom']) ?></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="joueur_id" value="<?= $joueur['id'] ?>">
+                        <label class="form-label">Nouvelle équipe :</label>
+                        <select name="nouvelle_equipe" class="form-control" required>
+                            <?php foreach ($equipes as $equipe) : ?>
+                                <?php if ($equipe['id'] != $joueur['equipe_id']) : ?>
+                                    <option value="<?= $equipe['id'] ?>"><?= htmlspecialchars($equipe['nom']) ?></option>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" name="transferer" class="btn btn-success">Confirmer le transfert</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+<?php endforeach; ?>
+
 
     <hr>
 
@@ -154,12 +250,15 @@ $joueurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <td>
                         <a href="admin_joueurs.php?edit=<?= $joueur['id'] ?>" class="btn btn-primary btn-sm">Modifier</a>
                         <a href="admin_joueurs.php?delete=<?= $joueur['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Voulez-vous vraiment supprimer ce joueur ?');">Supprimer</a>
+                        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#transferModal<?= $joueur['id'] ?>">Transférer</button>
                     </td>
+                    
                 </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script src="../bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js"></script>
 </body>

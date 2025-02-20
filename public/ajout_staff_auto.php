@@ -1,34 +1,28 @@
 <?php
 require_once '../config/database.php';
 
-// Liste des rôles possibles dans un staff
+// Liste de noms et prénoms réalistes
+$noms = ["Dupont", "Martin", "Durand", "Bernard", "Morel", "Girard", "Lambert", "Rousseau", "Garnier", "Leclerc"];
+$prenoms = ["Jean", "Paul", "Luc", "Michel", "Pierre", "Nicolas", "Antoine", "Mathieu", "Julien", "Olivier"];
 $roles = ["Entraîneur", "Assistant coach", "Préparateur physique", "Médecin", "Analyste vidéo", "Responsable équipement"];
 
-// Récupérer toutes les équipes
+// Récupérer les équipes
 $equipes = $pdo->query("SELECT id FROM equipes")->fetchAll(PDO::FETCH_ASSOC);
 
 foreach ($equipes as $equipe) {
     $equipe_id = $equipe['id'];
 
-    // Vérifier si l'équipe a déjà au moins 4 membres de staff
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM staff WHERE equipe_id = ?");
-    $stmt->execute([$equipe_id]);
-    $nb_staff = $stmt->fetchColumn();
+    // Générer 4 membres de staff différents pour chaque équipe
+    $staff_roles = array_rand(array_flip($roles), 4); // Sélectionne 4 rôles uniques
+    foreach ($staff_roles as $role) {
+        $nom = $noms[array_rand($noms)];
+        $prenom = $prenoms[array_rand($prenoms)];
 
-    if ($nb_staff < 4) {
-        $membres_a_ajouter = 4 - $nb_staff;
-
-        for ($i = 0; $i < $membres_a_ajouter; $i++) {
-            $nom = "Staff_" . rand(100, 999);
-            $prenom = "Membre_" . rand(100, 999);
-            $role = $roles[array_rand($roles)];
-
-            // Ajouter le membre du staff à la base de données
-            $stmt = $pdo->prepare("INSERT INTO staff (nom, prenom, role, equipe_id) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$nom, $prenom, $role, $equipe_id]);
-        }
+        // Ajouter le membre du staff à la base de données
+        $stmt = $pdo->prepare("INSERT INTO staff (nom, prenom, role, equipe_id) VALUES (?, ?, ?, ?)");
+        $stmt->execute([$nom, $prenom, $role, $equipe_id]);
     }
 }
 
-echo "✅ Staff généré avec succès pour chaque équipe !";
+echo "✅ 4 membres de staff générés pour chaque équipe avec des noms et rôles réalistes !";
 ?>

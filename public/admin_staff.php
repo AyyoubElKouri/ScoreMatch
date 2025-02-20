@@ -33,8 +33,8 @@ if (isset($_GET['edit'])) {
 
 // **Ajouter ou modifier un staff**
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $nom = $_POST['nom'];
-    $prenom = $_POST['prenom'];
+    $nom = trim($_POST['nom']);
+    $prenom = trim($_POST['prenom']);
     $role = $_POST['role'];
     $equipe_id = $_POST['equipe_id'];
 
@@ -81,47 +81,80 @@ $staffs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <body>
 
 <div class="container mt-5">
-    <h2 class="text-center"><?= $edit_mode ? "Modifier un Membre du Staff" : "Ajouter un Membre du Staff" ?></h2>
+    <h2 class="text-center">Gestion du Staff</h2>
 
-    <!-- Formulaire d'Ajout et de Modification -->
-    <form method="POST">
-        <?php if ($edit_mode) : ?>
-            <input type="hidden" name="id" value="<?= $id ?>">
-        <?php endif; ?>
-        
-        <div class="mb-3">
-            <label class="form-label">Nom :</label>
-            <input type="text" name="nom" class="form-control" value="<?= htmlspecialchars($nom) ?>" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Prénom :</label>
-            <input type="text" name="prenom" class="form-control" value="<?= htmlspecialchars($prenom) ?>" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Rôle :</label>
-            <select name="role" class="form-control" required>
-                <?php foreach ($roles as $r) : ?>
-                    <option value="<?= $r ?>" <?= ($role == $r) ? "selected" : "" ?>><?= $r ?></option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Équipe :</label>
-            <select name="equipe_id" class="form-control" required>
-                <?php foreach ($equipes as $equipe) : ?>
-                    <option value="<?= $equipe['id'] ?>" <?= ($equipe_id == $equipe['id']) ? "selected" : "" ?>>
-                        <?= htmlspecialchars($equipe['nom']) ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-        
-        <button type="submit" name="<?= $edit_mode ? "update" : "add" ?>" class="btn btn-success">
-            <?= $edit_mode ? "Mettre à jour" : "Ajouter" ?>
-        </button>
-        <a href="admin_staff.php" class="btn btn-secondary">Annuler</a>
-    </form>
+    <!-- Bouton Ajouter -->
+    <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#addStaffModal">+ Ajouter un Membre</button>
 
+    <!-- Tableau des membres du staff -->
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Nom</th>
+                <th>Prénom</th>
+                <th>Rôle</th>
+                <th>Équipe</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($staffs as $index => $staff) : ?>
+                <tr>
+                    <td><?= $index + 1 ?></td>
+                    <td><?= htmlspecialchars($staff['nom']) ?></td>
+                    <td><?= htmlspecialchars($staff['prenom']) ?></td>
+                    <td><?= htmlspecialchars($staff['role']) ?></td>
+                    <td><?= htmlspecialchars($staff['equipe']) ?></td>
+                    <td>
+                        <a href="admin_staff.php?edit=<?= $staff['id'] ?>" class="btn btn-warning btn-sm">Modifier</a>
+                        <a href="admin_staff.php?delete=<?= $staff['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Supprimer ce membre du staff ?');">Supprimer</a>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
 </div>
+
+<!-- Modal Ajouter un Membre -->
+<div class="modal fade" id="addStaffModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ajouter un Membre du Staff</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post">
+                <div class="modal-body">
+                    <label>Nom</label>
+                    <input type="text" name="nom" class="form-control" required>
+
+                    <label>Prénom</label>
+                    <input type="text" name="prenom" class="form-control" required>
+
+                    <label>Rôle</label>
+                    <select name="role" class="form-control" required>
+                        <?php foreach ($roles as $r) : ?>
+                            <option value="<?= $r ?>"><?= $r ?></option>
+                        <?php endforeach; ?>
+                    </select>
+
+                    <label>Équipe</label>
+                    <select name="equipe_id" class="form-control" required>
+                        <?php foreach ($equipes as $equipe) : ?>
+                            <option value="<?= $equipe['id'] ?>"><?= htmlspecialchars($equipe['nom']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" name="add" class="btn btn-success">Ajouter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

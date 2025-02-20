@@ -1,6 +1,9 @@
 <?php
 session_start();
+
+//verifier si l'utilisateur est connecté   
 $isLoggedIn = isset($_SESSION['user_id']);
+$userRole = isset($_SESSION['role']) ? $_SESSION['role'] : 'guest'; // 'guest' par défaut
 
 require_once '../config/database.php';
 
@@ -26,7 +29,7 @@ $matchs_du_jour = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Accueil - Gestion des Matchs</title>
+    <title>scores_matches</title>
 
     <!-- Lien Bootstrap CSS -->
     <link rel="stylesheet" href="../bootstrap-5.3.3-dist/css/bootstrap.css">
@@ -72,19 +75,26 @@ $matchs_du_jour = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="index.php">Accueil</a></li>
-                    <li class="nav-item"><a class="nav-link" href="matches.php">Matchs</a></li>
-                    <li class="nav-item"><a class="nav-link" href="teams.php">Équipes</a></li>
-                    <li class="nav-item"><a class="nav-link" href="tournaments.php">Tournois</a></li>
-                    <?php if ($isLoggedIn): ?>
-                        <li class="nav-item"><a class="nav-link" href="dashboard.php">Tableau de Bord</a></li>
-                        <li class="nav-item"><a class="nav-link btn btn-danger text-white" href="logout.php">Déconnexion</a></li>
-                    <?php else: ?>
-                        <li class="nav-item"><a class="nav-link btn btn-primary text-white" href="login.php">Connexion</a></li>
-                        <li class="nav-item"><a class="nav-link btn btn-success text-white" href="register.php">Inscription</a></li>
-                    <?php endif; ?>
-                </ul>
+               <ul class="navbar-nav ms-auto">
+    <li class="nav-item"><a class="nav-link" href="index.php">Accueil</a></li>
+    <li class="nav-item"><a class="nav-link" href="matches.php">Matchs</a></li>
+    <li class="nav-item"><a class="nav-link" href="teams.php">Équipes</a></li>
+    <li class="nav-item"><a class="nav-link" href="tournaments.php">Tournois</a></li>
+    <li class="nav-item"><a class="nav-link" href="classment.php">Classement</a></li>
+
+    <?php if ($isLoggedIn): ?>
+        <?php if ($userRole === 'user'): ?> 
+            <li class="nav-item"><a class="nav-link" href="vote_match.php">Voter un match</a></li>
+            <li class="nav-item"><a class="nav-link" href="discussion.php">Discuter un match</a></li>
+            <li class="nav-item"><a class="nav-link" href="profile.php">Mon Profil</a></li>
+        <?php endif; ?>
+        <li class="nav-item"><a class="nav-link btn btn-danger text-white" href="logout.php">Déconnexion</a></li>
+    <?php else: ?>
+        <li class="nav-item"><a class="nav-link btn btn-primary text-white" href="login.php">Connexion</a></li>
+        <li class="nav-item"><a class="nav-link btn btn-success text-white" href="register.php">Inscription</a></li>
+    <?php endif; ?>
+</ul>
+
             </div>
         </div>
     </nav>

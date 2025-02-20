@@ -45,6 +45,24 @@ try {
     die("Erreur lors de la récupération des joueurs : " . $e->getMessage());
 }
 ?>
+<?php
+try {
+    // Récupérer les 4 membres du staff de l'équipe affichée
+    $stmt_staff = $pdo->prepare("
+        SELECT nom, prenom, role 
+        FROM staff 
+        WHERE equipe_id = ? 
+        ORDER BY role 
+        
+    ");
+    $stmt_staff->execute([$id]); // $id correspond à l'ID de l'équipe affichée
+    $staffs = $stmt_staff->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    die("Erreur lors de la récupération du staff : " . $e->getMessage());
+}
+?>
+
+
 
 
 <!DOCTYPE html>
@@ -147,6 +165,42 @@ try {
         <p>Aucun joueur trouvé pour cette équipe.</p>
     </div>
 <?php endif; ?>
+
+<!-- Liste des membres du staff de l'équipe -->
+
+<?php if (!empty($staffs)) : ?>
+    <section class="py-5">
+        <div class="container">
+            <h3 class="text-center mb-4">👔 Staff de l'équipe</h3>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Nom</th>
+                            <th>Prénom</th>
+                            <th>Rôle</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($staffs as $staff) : ?>
+                            <tr>
+                                <td><?= htmlspecialchars($staff["nom"]) ?></td>
+                                <td><?= htmlspecialchars($staff["prenom"]) ?></td>
+                                <td><?= htmlspecialchars($staff["role"]) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+<?php else : ?>
+    <div class="text-center py-3">
+        <p>Aucun staff trouvé pour cette équipe.</p>
+    </div>
+<?php endif; ?>
+
+
 
 
 
