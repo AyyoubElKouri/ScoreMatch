@@ -72,26 +72,67 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= htmlspecialchars($team["nom"]) ?> - Détails</title>
     <link rel="stylesheet" href="../bootstrap-5.3.3-dist/css/bootstrap.css">
-</head>
-<body>
+    <style>
+      /* 🌙 Mode Sombre */
+.dark-mode {
+    background-color: #121212;
+    color: white;
+}
 
-<!-- Barre de navigation -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="index.php">⚽ Gestion des Matchs</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" href="index.php">Accueil</a></li>
-                <li class="nav-item"><a class="nav-link" href="matches.php">Matchs</a></li>
-                <li class="nav-item"><a class="nav-link" href="teams.php">Équipes</a></li>
-                <li class="nav-item"><a class="nav-link" href="tournaments.php">Tournois</a></li>
-            </ul>
-        </div>
-    </div>
-</nav>
+.dark-mode .card {
+    background-color: #1e1e1e;
+    color: white;
+    border: 1px solid #444;
+}
+
+.dark-mode .text-muted {
+    color: #bbb !important;
+}
+
+.dark-mode .table {
+    background-color: #1c1c1c;
+    color: white;
+    border: 1px solid #444;
+}
+
+.dark-mode .table thead {
+    background-color: #333;
+    color: white;
+}
+
+.dark-mode .btn-secondary {
+    background-color: #444;
+    border-color: #444;
+}
+
+.dark-mode .btn-primary {
+    background-color: #ff5722;
+    border-color: #ff5722;
+}
+
+.dark-mode .btn-primary:hover {
+    background-color: #e64a19;
+    border-color: #e64a19;
+}
+
+.dark-mode input {
+    background-color: #1e1e1e;
+    color: white;
+    border: 1px solid #444;
+}
+
+.dark-mode input::placeholder {
+    color: #bbb;
+}
+
+    </style>
+</head>
+<body class="<?= isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'dark' ? 'dark-mode' : '' ?>">
+
+  <!-- Inclure la barre de navigation -->
+<?php include 'navbar.php'; ?>
+
+
 
 <!-- Détails de l'équipe -->
 <section class="py-5">

@@ -2,13 +2,23 @@
 session_start();
 require_once '../config/database.php'; // Connexion à la base de données
 
-// Récupérer les équipes depuis la base de données
+// Vérifier si une recherche a été effectuée
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+
+// Récupérer les équipes en fonction de la recherche
 try {
-    $stmt = $pdo->query("SELECT id, nom, logo FROM equipes ORDER BY nom");
+    if (!empty($search)) {
+        $stmt = $pdo->prepare("SELECT id, nom, logo FROM equipes WHERE nom LIKE ? ORDER BY nom");
+        $stmt->execute(["%" . $search . "%"]);
+    } else {
+        $stmt = $pdo->query("SELECT id, nom, logo FROM equipes ORDER BY nom");
+    }
     $teams = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     die("Erreur : " . $e->getMessage());
 }
+
+
 ?>
 
 <!DOCTYPE html>
@@ -18,32 +28,77 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Équipes - Botola Pro Inwi</title>
     <link rel="stylesheet" href="../bootstrap-5.3.3-dist/css/bootstrap.css">
+    <style>
+      /* Mode Sombre */
+.dark-mode {
+    background-color: #121212;
+    color: white;
+}
+
+.dark-mode .card {
+    background-color: #1e1e1e;
+    color: white;
+    border: 1px solid #444;
+}
+
+.dark-mode .text-muted {
+    color: #bbb !important;
+}
+
+.dark-mode .card-body {
+    background-color: #1c1c1c;
+    border-radius: 10px;
+}
+
+.dark-mode .btn-primary {
+    background-color: #ff5722;
+    border-color: #ff5722;
+}
+
+.dark-mode .btn-primary:hover {
+    background-color: #e64a19;
+    border-color: #e64a19;
+}
+
+.dark-mode input {
+    background-color: #1e1e1e;
+    color: white;
+    border: 1px solid #444;
+}
+
+.dark-mode input::placeholder {
+    color: #bbb;
+}
+
+.dark-mode .input-group {
+    background-color: #1e1e1e;
+}
+
+    </style>
 </head>
-<body>
+<body class="<?= isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'dark' ? 'dark-mode' : '' ?>">
+
+  <!-- Inclure la barre de navigation -->
+<?php include 'navbar.php'; ?>
 
 <!-- Barre de navigation -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="index.php">⚽ Gestion des Matchs</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" href="index.php">Accueil</a></li>
-                <li class="nav-item"><a class="nav-link" href="matches.php">Matchs</a></li>
-                <li class="nav-item"><a class="nav-link active" href="teams.php">Équipes</a></li>
-                <li class="nav-item"><a class="nav-link" href="tournaments.php">Tournois</a></li>
-            </ul>
-        </div>
-    </div>
-</nav>
+
 
 <!-- Section des équipes -->
 <section class="py-5">
     <div class="container">
         <h2 class="mb-4 text-center">Équipes de Botola Pro Inwi</h2>
+        <!-- Barre de recherche -->
+<form method="GET" class="mb-4">
+    <div class="input-group">
+        <input type="text" name="search" class="form-control" placeholder="Rechercher une équipe..." value="<?= htmlspecialchars($search) ?>">
+        <button type="submit" class="btn btn-primary">Rechercher</button>
+    </div>
+</form>
+
         <div class="row justify-content-center">
+
+        
             <div class="col-md-6">
                 <?php
                 if (!empty($teams)) {
@@ -72,5 +127,27 @@ try {
 </section>
 
 <script src="../bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    let searchInput = document.querySelector("input[name='search']");
+    let searchForm = document.querySelector("form");
+
+    // Détecter quand le champ de recherche est vidé
+    searchInput.addEventListener("input", function () {
+        if (searchInput.value.trim() === "") {
+            window.location.href = "teams.php"; // Recharge la page pour afficher toutes les équipes
+        }
+    });
+
+    // Empêcher la soumission du formulaire si le champ est vide
+    searchForm.addEventListener("submit", function (e) {
+        if (searchInput.value.trim() === "") {
+            e.preventDefault(); // Empêche l'envoi de la requête vide
+            window.location.href = "teams.php"; // Recharge toutes les équipes
+        }
+    });
+});
+</script>
+
 </body>
 </html>

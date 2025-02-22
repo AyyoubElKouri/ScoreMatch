@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-//verifier si l'utilisateur est connecté   
+// Vérifier si l'utilisateur est connecté
 $isLoggedIn = isset($_SESSION['user_id']);
 $userRole = isset($_SESSION['role']) ? $_SESSION['role'] : 'guest'; // 'guest' par défaut
 
@@ -19,9 +19,6 @@ $query = "SELECT m.*,
 $stmt = $pdo->prepare($query);
 $stmt->execute([$today]);
 $matchs_du_jour = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-
-
 ?>
 
 <!DOCTYPE html>
@@ -29,208 +26,297 @@ $matchs_du_jour = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>scores_matches</title>
+    <title>Scores Matches</title>
 
-    <!-- Lien Bootstrap CSS -->
+    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="../bootstrap-5.3.3-dist/css/bootstrap.css">
-    <style>
-    .match-container {
-        display: flex;
-        overflow-x: auto; /* Permet le défilement horizontal */
-        white-space: nowrap;
-        gap: 15px;
-        padding: 10px;
-        scroll-snap-type: x mandatory;
-    }
+    
+    <!-- Custom Styles -->
+  
+   <style>
+    /* ----- Global Styles ----- */
+body {
+    transition: background 0.3s, color 0.3s;
+}
 
-    .match-card {
-        flex: 0 0 auto; /* Empêche les cartes de se réduire */
-        width: 310px; /* Taille de chaque carte */
-        height: 320px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        scroll-snap-align: start;
-    }
+/* Mode Sombre */
+.dark-mode {
+    background-color: #121212;
+    color: white;
+}
 
-    /* Cache la barre de scroll sur certains navigateurs */
-    .match-container::-webkit-scrollbar {
-        display: none;
-    }
+.dark-mode .navbar, .dark-mode .match-card, .dark-mode .publication-card {
+    background-color: #1c1c1c;
+    border-color: #333;
+}
 
-    .match-container {
-        -ms-overflow-style: none; /* IE et Edge */
-        scrollbar-width: none; /* Firefox */
-    }
-</style>
+.dark-mode .publication-card:hover {
+    background-color: #2a2a2a;
+}
+
+.dark-mode .text-muted, .dark-mode .publication-meta {
+    color: #bbb !important;
+}
+
+.dark-mode .card {
+    background-color: #1e1e1e;
+    color: white;
+}
+
+/* ----- Navbar ----- */
+.navbar {
+    background-color: #0D1B2A;
+    padding: 12px 20px;
+    border-bottom: 2px solid #FF5722;
+}
+
+.navbar-brand {
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+    display: flex;
+    align-items: center;
+}
+
+.navbar-nav .nav-link {
+    color: white;
+    font-weight: bold;
+    padding: 8px 12px;
+    transition: 0.3s;
+}
+
+.navbar-nav .nav-link:hover, .navbar-nav .nav-link.active {
+    background: #FF5722;
+}
+
+/* ----- Match Cards ----- */
+.match-card {
+    background-color: white;
+    border-radius: 10px;
+    padding: 15px;
+    transition: 0.3s;
+    border: 2px solid #ddd;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.match-card img {
+    width: 45px;
+    height: auto;
+}
+
+.team-name {
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.match-card .btn {
+    font-size: 12px;
+    padding: 5px 12px;
+    background-color: #FF5722;
+    border: none;
+}
+
+/* ----- Publications ----- */
+.publication-card {
+    background-color: #0D1B2A;
+    border-radius: 10px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+    color: white;
+}
+
+.publication-card:hover {
+    background-color: #1C2A3A;
+}
+
+.publication-img {
+    width: 120px;
+    height: 120px;
+    border-radius: 8px;
+    object-fit: cover;
+    margin-right: 15px;
+}
+
+.publication-content {
+    flex-grow: 1;
+}
+
+.publication-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    text-decoration: none;
+}
+
+.publication-title:hover {
+    text-decoration: underline;
+}
+
+.publication-meta {
+    font-size: 14px;
+    color: #b0b3b8;
+    margin-top: 5px;
+}
+
+   </style>
 
 </head>
 <body>
 
-    <!-- Barre de navigation Bootstrap -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">⚽ Gestion des Matchs</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-               <ul class="navbar-nav ms-auto">
-    <li class="nav-item"><a class="nav-link" href="index.php">Accueil</a></li>
-    <li class="nav-item"><a class="nav-link" href="matches.php">Matchs</a></li>
-    <li class="nav-item"><a class="nav-link" href="teams.php">Équipes</a></li>
-    <li class="nav-item"><a class="nav-link" href="tournaments.php">Tournois</a></li>
-    <li class="nav-item"><a class="nav-link" href="classment.php">Classement</a></li>
+    <!-- Barre de navigation -->
+  
+<nav class="navbar navbar-expand-lg">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="index.php">
+            <img src="../public/assets/logo.png" alt="Logo"> <strong>Scores Matches</strong>
+        </a>
 
-    <?php if ($isLoggedIn): ?>
-        <?php if ($userRole === 'user'): ?> 
-            <li class="nav-item"><a class="nav-link" href="vote_match.php">Voter un match</a></li>
-            <li class="nav-item"><a class="nav-link" href="discussion.php">Discuter un match</a></li>
-            <li class="nav-item"><a class="nav-link" href="profile.php">Mon Profil</a></li>
-        <?php endif; ?>
-        <li class="nav-item"><a class="nav-link btn btn-danger text-white" href="logout.php">Déconnexion</a></li>
-    <?php else: ?>
-        <li class="nav-item"><a class="nav-link btn btn-primary text-white" href="login.php">Connexion</a></li>
-        <li class="nav-item"><a class="nav-link btn btn-success text-white" href="register.php">Inscription</a></li>
-    <?php endif; ?>
-</ul>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-            </div>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link " href="index.php">Accueil</a></li>
+                <li class="nav-item"><a class="nav-link" href="calendrier.php">Calendrier</a></li>
+                <li class="nav-item"><a class="nav-link" href="teams.php">Équipes</a></li>
+                <li class="nav-item"><a class="nav-link" href="tournaments.php">Tournois</a></li>
+                <li class="nav-item"><a class="nav-link" href="classment.php">Classement</a></li>
+
+                <?php if ($isLoggedIn): ?>
+                    <?php if ($userRole === 'user'): ?>
+                        <li class="nav-item"><a class="nav-link" href="vote_match.php">Voter un match</a></li>
+                        <li class="nav-item"><a class="nav-link" href="discussion.php">Discuter un match</a></li>
+                        <li class="nav-item"><a class="nav-link" href="profile.php">Mon Profil</a></li>
+                    <?php endif; ?>
+                    <li class="nav-item"><a class="nav-link btn btn-danger text-white" href="logout.php">Déconnexion</a></li>
+                <?php else: ?>
+                    <li class="nav-item"><a class="nav-link btn btn-primary text-white" href="login.php">Connexion</a></li>
+                    <li class="nav-item"><a class="nav-link btn btn-success text-white" href="register.php">Inscription</a></li>
+                <?php endif; ?>
+            </ul>
+
+            <!-- Bouton Mode Sombre -->
+            <span class="theme-switch" onclick="toggleTheme()">🌙</span>
         </div>
-    </nav>
+    </div>
+</nav>
 
-    <!-- Section principale -->
-    <?php if (!empty($matchs_du_jour)): ?>
-        <?php if (!empty($matchs_du_jour)): ?>
+
+
+    <!-- Section des matchs du jour -->
+<section class="container mt-4">
+    <h2 class="text-center">Matchs du jour</h2>
     <div class="row justify-content-center">
         <?php foreach ($matchs_du_jour as $match): ?>
-            <div class="col-md-4">
-                <div class="card mb-3 shadow" style="width: 310px; height: 320px; display: flex; align-items: center; justify-content: center;">
+            <div class="col-md-3"> <!-- Réduction de la largeur -->
+                <div class="card match-card shadow">
                     <div class="card-body text-center">
                         <p class="text-muted"><strong>Heure:</strong> <?= date('H:i', strtotime($match['heure'])) ?></p> 
                         <div class="d-flex justify-content-center align-items-center">
-                            <div class="text-center me-3">
-                                <img src="<?= htmlspecialchars($match['logo1']) ?>" alt="<?= htmlspecialchars($match['equipe1']) ?>" width="70">
-                                <p class="mt-2"><strong><?= htmlspecialchars($match['equipe1']) ?></strong></p>
+                            <div class="text-center me-2">
+                                <img src="<?= htmlspecialchars($match['logo1']) ?>" alt="<?= htmlspecialchars($match['equipe1']) ?>">
+                                <p class="mt-2 team-name"><?= htmlspecialchars($match['equipe1']) ?></p>
                             </div>
-                            <h3 class="mx-3">VS</h3>
-                            <div class="text-center ms-3">
-                                <img src="<?= htmlspecialchars($match['logo2']) ?>" alt="<?= htmlspecialchars($match['equipe2']) ?>" width="70">
-                                <p class="mt-2"><strong><?= htmlspecialchars($match['equipe2']) ?></strong></p>
+                            <h4 class="mx-2">VS</h4>
+                            <div class="text-center ms-2">
+                                <img src="<?= htmlspecialchars($match['logo2']) ?>" alt="<?= htmlspecialchars($match['equipe2']) ?>">
+                                <p class="mt-2 team-name"><?= htmlspecialchars($match['equipe2']) ?></p>
                             </div>
                         </div>
-                        <a href="match_details.php?id=<?= $match['id'] ?>" class="btn btn-primary btn-sm mt-3">Voir Détails</a>
+                        <a href="match_details.php?id=<?= $match['id'] ?>" class="btn btn-primary btn-sm mt-2">Voir Détails</a>
                     </div>
                 </div>
             </div>
         <?php endforeach; ?>
     </div>
-<?php else: ?>
-    <p class="text-muted">Aucun match prévu pour aujourd'hui.</p>
-<?php endif; ?>
+</section>
 
-<?php else: ?>
-    <p class="text-muted">Aucun match prévu pour aujourd'hui.</p>
-<?php endif; ?>
+ <!-- Section Publications -->
+ <?php
+// Récupérer les publications depuis la base de données
+$query = "SELECT * FROM publications ORDER BY date_publication DESC LIMIT 6"; // Limite à 6 publications
+$publications = $pdo->query($query)->fetchAll(PDO::FETCH_ASSOC);
+?>
 
-
-
-    <!-- Section Publications -->
-<section class="py-5 bg-light">
+<!-- Section Publications -->
+<!-- Section Publications -->
+<section class="py-5 publications">
     <div class="container">
-        <h2 class="mb-4">Publications sur botola inwi pro</h2>
+        <h2 class="mb-4 text-center">Publications sur Botola Pro</h2>
         <div class="row">
-            <?php
-            // Tableau de publications statiques
-            $publications = [
-                [
-                    "titre" => "Wydad Casablanca en tête du championnat",
-                    "contenu" => "Le Wydad continue de dominer la Botola Pro Inwi avec une série impressionnante de victoires.",
-                    "image" => "../public/assets/images/waydad.png", // Remplace avec une image valide
-                    "lien" => "#"
-                ],
-                [
-                    "titre" => "Raja Casablanca prêt pour le sacre ?",
-                    "contenu" => "Le Raja Club Athletic montre une belle forme cette saison et se positionne comme un sérieux prétendant au titre.",
-                    "image" => "../public/assets/images/raja.png",
-                    "lien" => "#"
-                ],
-                [
-                    "titre" => "RS Berkane impressionne en championnat",
-                    "contenu" => "La Renaissance Sportive de Berkane réalise une excellente saison et vise les premières places du classement.",
-                    "image" => "../public/assets/images/barkan.png",
-                    "lien" => "#"
-                ],
-                [
-                    "titre" => "FUS Rabat surprend ses adversaires",
-                    "contenu" => "Le Fath Union Sport de Rabat s'impose comme un sérieux challenger cette saison.",
-                    "image" => "../public/assets/images/fus.png",
-                    "lien" => "#"
-                ],
-                [
-                    "titre" => "Moghreb Tétouan de retour en force",
-                    "contenu" => "Le MAT affiche de belles performances et espère se maintenir dans le haut du tableau.",
-                    "image" => "../public/assets/images/tetouan.png",
-                    "lien" => "#"
-                ],
-                [
-                    "titre" => "HUSA Agadir vise le haut du classement",
-                    "contenu" => "Hassania Agadir mise sur une dynamique positive pour s’imposer cette saison.",
-                    "image" => "../public/assets/images/agadir.png",
-                    "lien" => "#"
-                ]
-            ];
-            
-
-            // Affichage des publications
-            foreach ($publications as $publication) {
-                echo '<div class="col-md-4 mb-4">';
-                echo '<div class="card">';
-                echo '<img src="' . $publication['image'] . '" class="card-img-top" alt="Image">';
-                echo '<div class="card-body">';
-                echo '<h5 class="card-title">' . htmlspecialchars($publication['titre']) . '</h5>';
-                echo '<p class="card-text">' . htmlspecialchars($publication['contenu']) . '</p>';
-                echo '<a href="' . $publication['lien'] . '" class="btn btn-primary">Lire la suite</a>';
-                echo '</div>';
-                echo '</div>';
-                echo '</div>';
-            }
-            ?>
+            <?php foreach ($publications as $publication) : ?>
+                <div class="col-md-12 mb-3">
+                    <div class="publication-card d-flex align-items-center p-3 shadow">
+                        <img src="<?= !empty($publication['image']) ? '../public/assets/images/' . htmlspecialchars($publication['image']) : '../public/assets/images/default.png'; ?>" class="publication-img" alt="Image">
+                        <div class="publication-content">
+                            <a href="#" class="publication-title"><?= htmlspecialchars($publication['titre']) ?></a>
+                            <p class="publication-meta"><i class="fas fa-newspaper"></i> Publié le <?= date('d.m.Y H:i', strtotime($publication['date_publication'])) ?></p>
+                            <p class="text-muted"><?= htmlspecialchars(substr($publication['contenu'], 0, 100)) ?>...</p>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
         </div>
     </div>
 </section>
 
 
+
+
     <!-- Section des matchs récents -->
+    
+    <?php
+        require_once '../config/database.php';
+
+        // Récupérer les derniers matchs
+        $query = "SELECT m.*, 
+            e1.nom AS equipe1, e2.nom AS equipe2, 
+            e1.logo AS logo1, e2.logo AS logo2 
+            FROM matches m
+            JOIN equipes e1 ON m.equipe1_id = e1.id
+            JOIN equipes e2 ON m.equipe2_id = e2.id
+            ORDER BY m.date_match DESC 
+            LIMIT 5";
+
+      $result = $pdo->query($query);
+      $dernier_matchs = $result->fetchAll(PDO::FETCH_ASSOC);
+    ?>
+
     <section class="py-5">
-        <div class="container">
-            <h2 class="mb-4">Derniers Matchs</h2>
-            <div class="row">
-                <?php
-                require_once '../config/database.php';
-
-                // Récupérer les derniers matchs
-                $query = "SELECT * FROM matchs ORDER BY date_match DESC LIMIT 5"; 
-
-                $result = $pdo->query($query);
-
-                while ($match = $result->fetch(PDO::FETCH_ASSOC)) {
-                    echo "<div class='col-md-4 mb-3'>";
-                    echo "<div class='card'>";
-                    echo "<div class='card-body'>";
-                    echo "<h5 class='card-title'>Match ID: " . $match['id'] . "</h5>";
-                    echo "<p class='card-text'>Date: " . $match['date'] . "</p>";
-                    echo "<a href='match_details.php?id=" . $match['id'] . "' class='btn btn-primary'>Voir Détails</a>";
-                    echo "</div>";
-                    echo "</div>";
-                    echo "</div>";
-                }
-                ?>
-            </div>
+    <div class="container">
+        <h2 class="mb-4 text-center">Derniers Matchs</h2>
+        <div class="row justify-content-center">
+            <?php foreach ($dernier_matchs as $match): ?>
+                <div class="col-md-4 col-sm-6 mb-3">
+                    <div class="card match-card shadow text-center p-3">
+                        <p class="text-muted">
+                            <?= date('d.m H:i', strtotime($match['date_match'])) ?>
+                        </p>
+                        <div class="d-flex align-items-center justify-content-center">
+                            <div class="me-2 text-center">
+                                <img src="<?= htmlspecialchars($match['logo1']) ?>" alt="<?= htmlspecialchars($match['equipe1']) ?>" class="team-logo">
+                                <p class="team-name"><?= htmlspecialchars($match['equipe1']) ?></p>
+                            </div>
+                            <h5 class="mx-2">VS</h5>
+                            <div class="ms-2 text-center">
+                                <img src="<?= htmlspecialchars($match['logo2']) ?>" alt="<?= htmlspecialchars($match['equipe2']) ?>" class="team-logo">
+                                <p class="team-name"><?= htmlspecialchars($match['equipe2']) ?></p>
+                            </div>
+                        </div>
+                        <a href="match_details.php?id=<?= $match['id'] ?>" class="btn btn-sm btn-primary mt-2">Voir Détails</a>
+                    </div>
+                </div>
+            <?php endforeach; ?>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Pied de page -->
+      
+
   <!-- Pied de page -->
 <footer class="bg-dark text-white pt-5 pb-3">
     <div class="container">
@@ -239,7 +325,7 @@ $matchs_du_jour = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div class="col-md-3">
                 <h5 class="text-uppercase">Tournois</h5>
                 <ul class="list-unstyled">
-                    <li><a href="#" class="text-white text-decoration-none">Premier League</a></li>
+                    <li><a href="#" class="text-white text-decoration-none">botola inwi pro</a></li>
                     <li><a href="#" class="text-white text-decoration-none">Classement</a></li>
                     <li><a href="#" class="text-white text-decoration-none">Résultats</a></li>
                     <li><a href="#" class="text-white text-decoration-none">Statistiques</a></li>
@@ -297,12 +383,25 @@ $matchs_du_jour = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <script src="https://kit.fontawesome.com/yourkitid.js" crossorigin="anonymous"></script>
 
 
-    <!-- Lien vers jQuery -->
-    <script src="../bootstrap-5.3.3-dist/js/jquery-3.7.1.min.js"></script>
-    <!-- Lien vers Popper.js -->
-    <script src="../bootstrap-5.3.3-dist/js/popper.min.js"></script>
-    <!-- Lien vers Bootstrap JS -->
-    <script src="../bootstrap-5.3.3-dist/js/bootstrap.js"></script>
+<!-- JavaScript pour le Mode Sombre -->
+<script>
+    function toggleTheme() {
+        document.body.classList.toggle("dark-mode");
+        let isDarkMode = document.body.classList.contains("dark-mode");
+        localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+    }
+
+    // Appliquer le thème sauvegardé
+    document.addEventListener("DOMContentLoaded", function () {
+        if (localStorage.getItem("theme") === "dark") {
+            document.body.classList.add("dark-mode");
+        }
+    });
+</script>
+
+
+<!-- Bootstrap JS -->
+<script src="../bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>

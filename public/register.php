@@ -6,7 +6,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $nom = $_POST['nom'];
     $email = $_POST['email'];
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
-    $role = 'user'; // Par défaut, un nouvel utilisateur est simple utilisateur
+    
+    // Vérifier que le rôle sélectionné est valide
+    $roles_valides = ['user', 'admin_tournoi'];
+    $role = in_array($_POST['role'], $roles_valides) ? $_POST['role'] : 'user';
 
     // Vérifier si l'email existe déjà
     $query = "SELECT * FROM users WHERE email = ?";
@@ -16,7 +19,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($stmt->rowCount() > 0) {
         $error = "Cet email est déjà utilisé.";
     } else {
-        // Insérer dans la base de données
+        // Insérer l'utilisateur dans la base de données avec le rôle choisi
         $query = "INSERT INTO users (nom, email, password, role) VALUES (?, ?, ?, ?)";
         $stmt = $pdo->prepare($query);
         
@@ -45,6 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <?php if (isset($error)) : ?>
         <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
+    
     <form method="post">
         <div class="mb-3">
             <label class="form-label">Nom</label>
@@ -58,8 +62,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <label class="form-label">Mot de passe</label>
             <input type="password" name="password" class="form-control" required>
         </div>
+        <div class="mb-3">
+            <label class="form-label">Rôle</label>
+            <select name="role" class="form-control">
+                <option value="user">Utilisateur</option>
+                <option value="admin_tournoi">Admin Tournoi</option>
+            </select>
+        </div>
         <button type="submit" class="btn btn-success w-100">S'inscrire</button>
     </form>
+    
     <p class="text-center mt-3">Déjà un compte ? <a href="login.php">Connectez-vous</a></p>
 </div>
 

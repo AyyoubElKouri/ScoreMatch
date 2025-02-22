@@ -22,13 +22,12 @@ $stmt = $pdo->prepare("
     ORDER BY m.date_match ASC, m.heure ASC
 ");
 
-
-
 $stmt->execute();
 $matches = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Vérifier si un match a été sélectionné par l'utilisateur
-$match_id = isset($_POST['match_id']) ? intval($_POST['match_id']) : null;
+$match_id = isset($_GET['match_id']) ? intval($_GET['match_id']) : null;
+
 $selected_match = null;
 $comments = [];
 
@@ -72,10 +71,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['comment']) && $match_i
     $stmt->execute([$user_id, $match_id, $comment]);
 
     // Rafraîchir la page pour voir immédiatement le commentaire
-    header("Location: discussion.php");
+    header("Location: discussion.php?match_id=" . $match_id);
     exit();
+
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="fr">
@@ -86,6 +87,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['comment']) && $match_i
     <link rel="stylesheet" href="../bootstrap-5.3.3-dist/css/bootstrap.css">
 </head>
 <body>
+  <!-- Inclure la barre de navigation -->
+<?php include 'navbar.php'; ?>
 <div class="container mt-5">
     <h2 class="text-center">Discussions sur les Matchs</h2>
 
@@ -93,15 +96,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['comment']) && $match_i
     <div class="card mb-4 shadow">
         <div class="card-body">
             <h5>Sélectionnez un match :</h5>
-            <form method="POST">
-                <select name="match_id" class="form-control" onchange="this.form.submit()">
+            <form method="GET">
+                  <select name="match_id" class="form-control" onchange="this.form.submit()">
                     <option value="">-- Choisissez un match --</option>
                     <?php foreach ($matches as $match): ?>
-                      <option value="<?= $match['id'] ?>">
-                    <?= htmlspecialchars($match['equipe1_nom']) ?> 🆚 <?= htmlspecialchars($match['equipe2_nom']) ?> |
+                    <option value="<?= $match['id'] ?>" <?= ($match['id'] == $match_id) ? 'selected' : '' ?>>
+                     <?= htmlspecialchars($match['equipe1_nom']) ?> 🆚 <?= htmlspecialchars($match['equipe2_nom']) ?> |
                     <?= htmlspecialchars($match['date_match']) ?> à <?= htmlspecialchars($match['heure']) ?>
-               </option>
-
+              </option>
                     <?php endforeach; ?>
                 </select>
             </form>

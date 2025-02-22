@@ -59,34 +59,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['match_id'], $_POST['eq
     <link rel="stylesheet" href="../bootstrap-5.3.3-dist/css/bootstrap.css">
 </head>
 <body>
+  <!-- Inclure la barre de navigation -->
+<?php include 'navbar.php'; ?>
 
 <!-- Barre de navigation -->
 
 <div id="message-container" class="container mt-3">
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="index.php">⚽ Gestion des Matchs</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" href="index.php">Accueil</a></li>
-                <li class="nav-item"><a class="nav-link active" href="vote_match.php">Voter un match</a></li>
-                <li class="nav-item"><a class="nav-link" href="matches.php">Matchs</a></li>
-                <li class="nav-item"><a class="nav-link" href="teams.php">Équipes</a></li>
-                <li class="nav-item"><a class="nav-link" href="tournaments.php">Tournois</a></li>
-                <?php if ($isLoggedIn): ?>
-                    <li class="nav-item"><a class="nav-link btn btn-danger text-white" href="logout.php">Déconnexion</a></li>
-                <?php else: ?>
-                    <li class="nav-item"><a class="nav-link btn btn-primary text-white" href="login.php">Connexion</a></li>
-                    <li class="nav-item"><a class="nav-link btn btn-success text-white" href="register.php">Inscription</a></li>
-                <?php endif; ?>
-            </ul>
-        </div>
-    </div>
-</nav>
+
 
 
 </div>

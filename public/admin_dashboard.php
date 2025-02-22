@@ -113,11 +113,12 @@ $nb_joueurs = $pdo->query("SELECT COUNT(*) FROM joueurs")->fetchColumn();
 <div class="sidebar">
     <div class="sidebar-header"><i class="fas fa-futbol"></i> Admin Global</div>
     <a href="admin_equipes.php"><i class="fas fa-users"></i> Gérer les Équipes</a>
-    <a href="admin_matchs.php"><i class="fas fa-futbol"></i> Gérer les Matchs</a>
+
     <a href="admin_staff.php"><i class="fas fa-user-tie"></i> Gérer le Staff</a>
     <a href="admin_joueurs.php"><i class="fas fa-user"></i> Gérer les Joueurs</a>
     <a href="admin_arbitres.php"><i class="fas fa-trophy"></i> Gérer les arbites</a>
-    <a href="admin_admins.php"><i class="fas fa-user-shield"></i> Gérer les Admins tournous</a>
+    <a href="admin_compte.php"><i class="fas fa-user-shield"></i> Gérer les Admins Tournoi</a>
+
     <hr class="text-white">
     <a href="logout.php" class="text-danger"><i class="fas fa-sign-out-alt"></i> Se Déconnecter</a>
 </div>

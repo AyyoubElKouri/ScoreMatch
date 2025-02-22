@@ -3,7 +3,7 @@ session_start();
 require_once '../config/database.php';
 
 // Vérification du rôle admin_global
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin_global') {
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin_tournoi') {
     header("Location: index.php");
     exit();
 }
