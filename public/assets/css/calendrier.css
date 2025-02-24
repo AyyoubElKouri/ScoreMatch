@@ -69,22 +69,18 @@
   color: #FF5722;
 }
 
-/* Bouton Détails */
-.match-details-btn {
-  background-color: #FF5722;
-  color: white;
-  font-size: 12px;
-  padding: 8px 12px;
-  border-radius: 5px;
-  border: none;
+/* Rendre toute la carte cliquable */
+.match-card {
   cursor: pointer;
-  transition: 0.3s;
-  text-align: center;
+  position: relative; /* Permet de contenir le pseudo-élément */
+  transition: transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 
-.match-details-btn:hover {
-  background-color: #E64A19;
+.match-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 }
+
 
 /* =========================== */
 /* ==== MODE SOMBRE ==== */
@@ -115,3 +111,27 @@
 .dark-mode .match-details-btn:hover {
   background-color: #E64A19;
 }
+
+/* Centrer les équipes dans la carte */
+.match-content {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Centre les équipes */
+  gap: 20px; /* Espacement entre les éléments */
+  width: 100%;
+  text-align: center;
+}
+
+/* Assurer que les équipes et le "VS" sont bien alignés */
+.team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Centrer le texte sous les logos */
+.team-name {
+  text-align: center;
+}
+

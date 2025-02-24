@@ -25,63 +25,161 @@ $nb_equipes = $pdo->query("SELECT COUNT(*) FROM equipes")->fetchColumn();
     <script src="https://kit.fontawesome.com/yourkitid.js" crossorigin="anonymous"></script> <!-- FontAwesome -->
 
     <style>
-        /* Styles pour la sidebar */
-        .sidebar {
-            height: 100vh;
-            width: 250px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background-color: #212529;
-            padding-top: 20px;
-            overflow-y: auto; /* Scroll */
-        }
-        .sidebar a {
-            padding: 12px;
-            text-decoration: none;
-            font-size: 18px;
-            color: white;
-            display: block;
-            transition: 0.2s;
-        }
-        .sidebar a:hover {
-            background-color: #495057;
-            padding-left: 20px;
-        }
-        .sidebar .sidebar-header {
-            text-align: center;
-            font-size: 20px;
-            color: white;
-            font-weight: bold;
-            padding-bottom: 10px;
-        }
-        .content {
-            margin-left: 260px;
-            padding: 20px;
-        }
+        /* Importation de Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
-        /* Styles des cartes de statistiques */
-        .stat-card {
-            border-radius: 15px;
-            padding: 20px;
-            color: white;
-            text-align: center;
-            transition: 0.3s;
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
-        }
-        .stat-card:hover {
-            transform: scale(1.05);
-            box-shadow: 2px 2px 15px rgba(0, 0, 0, 0.3);
-        }
-        .stat-icon {
-            font-size: 40px;
-            opacity: 0.8;
-        }
-        
-        /* Couleurs */
-        .bg-blue { background-color: #007bff; }
-        .bg-green { background-color: #28a745; }
-        .bg-yellow { background-color: #ffc107; }
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa;
+    color: #212529;
+}
+
+/* Styles pour la Sidebar */
+.sidebar {
+    height: 100vh;
+    width: 250px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: linear-gradient(180deg, #212529 0%, #343a40 100%);
+    padding-top: 20px;
+    transition: 0.3s ease-in-out;
+    box-shadow: 2px 0px 10px rgba(0, 0, 0, 0.2);
+    overflow-y: auto;
+}
+
+.sidebar a {
+    padding: 12px;
+    text-decoration: none;
+    font-size: 17px;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: 0.3s;
+    border-radius: 5px;
+}
+
+.sidebar a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding-left: 18px;
+    transition: 0.3s ease-in-out;
+}
+
+/* Style pour l'icône de la sidebar */
+.sidebar i {
+    font-size: 18px;
+}
+
+/* Style du titre */
+.sidebar-header {
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 20px;
+}
+
+/* Animation au chargement */
+.sidebar a, .sidebar-header {
+    opacity: 0;
+    transform: translateX(-20px);
+    animation: slideIn 0.6s ease-in-out forwards;
+}
+
+/* Effet d'animation pour les liens */
+@keyframes slideIn {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Style du contenu principal */
+.content {
+    margin-left: 270px;
+    padding: 30px;
+    transition: 0.3s;
+}
+
+/* Style des cartes statistiques */
+.stat-card {
+    border-radius: 15px;
+    padding: 25px;
+    color: white;
+    text-align: center;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 3px 3px 15px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card:hover {
+    transform: scale(1.05);
+    box-shadow: 3px 3px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Icônes dans les cartes */
+.stat-icon {
+    font-size: 50px;
+    opacity: 0.8;
+}
+
+/* Effet d'animation */
+.stat-card::before {
+    content: "";
+    position: absolute;
+    top: -100px;
+    left: -100px;
+    width: 100px;
+    height: 100px;
+    background: rgba(255, 255, 255, 0.1);
+    transform: rotate(45deg);
+    transition: 0.5s;
+}
+
+.stat-card:hover::before {
+    top: -50px;
+    left: -50px;
+}
+
+/* Couleurs des cartes */
+.bg-blue { background: linear-gradient(135deg, #007bff, #0056b3); }
+.bg-green { background: linear-gradient(135deg, #28a745, #1c7c34); }
+.bg-yellow { background: linear-gradient(135deg, #ffc107, #d39e00); }
+
+/* Style du bouton de déconnexion */
+.sidebar .text-danger {
+    font-weight: bold;
+    transition: all 0.3s ease-in-out;
+}
+
+.sidebar .text-danger:hover {
+    background-color: rgba(255, 0, 0, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100px;
+    }
+    .sidebar a {
+        font-size: 14px;
+        padding: 10px;
+        justify-content: center;
+    }
+    .sidebar i {
+        font-size: 20px;
+    }
+    .sidebar .sidebar-header {
+        font-size: 18px;
+    }
+    .content {
+        margin-left: 120px;
+        padding: 15px;
+    }
+}
+
     </style>
 </head>
 <body>

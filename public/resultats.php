@@ -30,7 +30,7 @@ $matchs_resultats = $pdo->query($query)->fetchAll(PDO::FETCH_ASSOC);
     <h2 class="text-center">Résultats des Matchs</h2>
     <div class="match-list">
         <?php foreach ($matchs_resultats as $match): ?>
-            <div class="match-item">
+            <div class="match-item" onclick="goToDetails(<?= $match['id'] ?>)">
                 <div class="match-info">
                     <span class="match-date"><?= date('d.m H:i', strtotime($match['date_match'])) ?></span>
                 </div>
@@ -49,5 +49,12 @@ $matchs_resultats = $pdo->query($query)->fetchAll(PDO::FETCH_ASSOC);
         <?php endforeach; ?>
     </div>
 </div>
+
+<script>
+function goToDetails(matchId) {
+    window.location.href = "detail_resultat.php?match_id=" + matchId;
+}
+</script>
+
 </body>
 </html>

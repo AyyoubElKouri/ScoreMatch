@@ -41,7 +41,8 @@ $matchs = $pdo->query("
         <h2 class="mb-4 text-center">Matchs de Botola Pro</h2>
         <div class="match-list">
             <?php foreach ($matchs as $match) : ?>
-                <div class="match-card">
+                <div class="match-card" data-match-id="<?= $match['id'] ?>">
+
                     <!-- Date et Heure -->
                     <div class="match-info">
                     <?php
@@ -75,8 +76,7 @@ $matchs = $pdo->query("
                             <p class="team-name"><?= htmlspecialchars($match['equipe2']) ?></p>
                         </div>
                     </div>
-                    <!-- Bouton Détails -->
-                    <a href="match_details.php?id=<?= $match['id'] ?>" class="match-details-btn">Détails</a>
+                   
                 </div>
             <?php endforeach; ?>
         </div>
@@ -92,6 +92,20 @@ $matchs = $pdo->query("
 
 <!-- Bootstrap JS -->
 <script src="../bootstrap-5.3.3-dist/js/bootstrap.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll(".match-card").forEach(function(card) {
+        card.addEventListener("click", function() {
+            const matchId = this.getAttribute("data-match-id");
+            if (matchId) {
+                window.location.href = "match_details.php?id=" + matchId;
+            }
+        });
+    });
+});
+</script>
+
 
 </body>
 </html>
