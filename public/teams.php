@@ -28,53 +28,8 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Équipes - Botola Pro Inwi</title>
     <link rel="stylesheet" href="../bootstrap-5.3.3-dist/css/bootstrap.css">
-    <style>
-      /* Mode Sombre */
-.dark-mode {
-    background-color: #121212;
-    color: white;
-}
+    <link rel="stylesheet" href="../public/assets/css/teams.css">
 
-.dark-mode .card {
-    background-color: #1e1e1e;
-    color: white;
-    border: 1px solid #444;
-}
-
-.dark-mode .text-muted {
-    color: #bbb !important;
-}
-
-.dark-mode .card-body {
-    background-color: #1c1c1c;
-    border-radius: 10px;
-}
-
-.dark-mode .btn-primary {
-    background-color: #ff5722;
-    border-color: #ff5722;
-}
-
-.dark-mode .btn-primary:hover {
-    background-color: #e64a19;
-    border-color: #e64a19;
-}
-
-.dark-mode input {
-    background-color: #1e1e1e;
-    color: white;
-    border: 1px solid #444;
-}
-
-.dark-mode input::placeholder {
-    color: #bbb;
-}
-
-.dark-mode .input-group {
-    background-color: #1e1e1e;
-}
-
-    </style>
 </head>
 <body class="<?= isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'dark' ? 'dark-mode' : '' ?>">
 

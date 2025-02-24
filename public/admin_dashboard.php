@@ -118,6 +118,8 @@ $nb_joueurs = $pdo->query("SELECT COUNT(*) FROM joueurs")->fetchColumn();
     <a href="admin_joueurs.php"><i class="fas fa-user"></i> Gérer les Joueurs</a>
     <a href="admin_arbitres.php"><i class="fas fa-trophy"></i> Gérer les arbites</a>
     <a href="admin_compte.php"><i class="fas fa-user-shield"></i> Gérer les Admins Tournoi</a>
+    <a href="admin_user.php"><i class="fas fa-users"></i> Gérer les Utilisateurs</a>
+
 
     <hr class="text-white">
     <a href="logout.php" class="text-danger"><i class="fas fa-sign-out-alt"></i> Se Déconnecter</a>

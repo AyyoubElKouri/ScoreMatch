@@ -100,6 +100,33 @@ body.dark-mode {
     margin-left: 10px;
     color: white;
 }
+ /* 🌙 Mode Sombre */
+      .dark-mode {
+          background-color: #121212;
+          color: white;
+      }
+
+      .dark-mode .navbar {
+          background-color: #1c1c1c;
+          border-bottom: 2px solid #FF5722;
+      }
+
+      .dark-mode .navbar-nav .nav-link {
+          color: #ccc;
+      }
+
+      .dark-mode .navbar-nav .nav-link:hover,
+      .dark-mode .navbar-nav .nav-link.active {
+          background: #FF5722;
+          color: white;
+      }
+
+      .theme-switch {
+          cursor: pointer;
+          font-size: 20px;
+          margin-left: 10px;
+          color: white;
+      }
 </style>
 
 </head>
@@ -109,7 +136,7 @@ body.dark-mode {
 <nav class="navbar navbar-expand-lg">
     <div class="container-fluid">
         <a class="navbar-brand" href="index.php">
-            <img src="../public/assets/logo.png" alt="Logo"> <strong>Scores Matches</strong>
+            <img src="../public/assets/images/logo_app.png" alt="Logo"> <strong>Scores Matches</strong>
         </a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -122,7 +149,8 @@ body.dark-mode {
                 <li class="nav-item"><a class="nav-link" href="calendrier.php">calendrier</a></li>
                 <li class="nav-item"><a class="nav-link" href="teams.php">Équipes</a></li>
                 <li class="nav-item"><a class="nav-link" href="tournaments.php">Tournois</a></li>
-                <li class="nav-item"><a class="nav-link" href="classment.php">Classement</a></li>
+                <li class="nav-item"><a class="nav-link" href="classement.php">Classement</a></li>
+                <li class="nav-item"><a class="nav-link" href="resultats.php">Résultats</a></li>
 
                 <?php if ($isLoggedIn): ?>
                     <?php if ($userRole === 'user'): ?>

@@ -4,12 +4,16 @@ require_once '../config/database.php';
 
 // Récupérer tous les matchs depuis la base de données
 $matchs = $pdo->query("
-    SELECT m.id, e1.nom AS equipe1, e2.nom AS equipe2, e1.logo AS logo1, e2.logo AS logo2, m.date_match, m.heure 
+    SELECT m.id, e1.nom AS equipe1, e2.nom AS equipe2, e1.logo AS logo1, e2.logo AS logo2, 
+           m.date_match AS match_date, 
+           m.heure AS match_time
     FROM matches m
     JOIN equipes e1 ON m.equipe1_id = e1.id
     JOIN equipes e2 ON m.equipe2_id = e2.id
-    ORDER BY m.date_match DESC
+    ORDER BY m.date_match ASC
 ")->fetchAll(PDO::FETCH_ASSOC);
+
+
 ?>
 
 <!DOCTYPE html>
@@ -19,30 +23,9 @@ $matchs = $pdo->query("
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Matchs de Botola Pro Inwi</title>
     <link rel="stylesheet" href="../bootstrap-5.3.3-dist/css/bootstrap.css">
+    <link rel="stylesheet" href="../public/assets/css/calendrier.css">
 
-    <style>
-        /* Mode sombre pour la page calendrier */
-.dark-mode {
-    background-color: #121212;
-    color: white;
-}
-
-.dark-mode .card {
-    background-color: #1e1e1e;
-    color: white;
-    border: 1px solid #444;
-}
-
-.dark-mode .text-muted {
-    color: #bbb !important;
-}
-
-.dark-mode .card-body {
-    background-color: #1c1c1c;
-    border-radius: 10px;
-}
-
-    </style>
+  
 </head>
 <body class="<?= isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'dark' ? 'dark-mode' : '' ?>">
 
@@ -50,35 +33,56 @@ $matchs = $pdo->query("
 <!-- Inclure la barre de navigation -->
 <?php include 'navbar.php'; ?>
 
+
 <!-- Section des matchs -->
 <!-- Section des matchs -->
 <section class="py-5">
     <div class="container">
-        <h2 class="mb-4 text-center">Matchs de Botola Pro </h2>
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <?php foreach ($matchs as $match) : ?>
-                    <div class="card mb-4 shadow match-card">
-                        <div class="card-body text-center">
-                            <p class="text-muted mb-1"><?= htmlspecialchars($match['date_match']) . " | " . htmlspecialchars($match['heure']) ?></p>
-                            <div class="d-flex align-items-center justify-content-center">
-                                <div class="me-3 text-center">
-                                    <img src="<?= htmlspecialchars($match['logo1']) ?>" alt="Logo <?= htmlspecialchars($match['equipe1']) ?>" class="img-fluid" style="width: 50px;">
-                                    <p class="mt-2"><strong><?= htmlspecialchars($match['equipe1']) ?></strong></p>
-                                </div>
-                                <h3 class="mx-3">VS</h3>
-                                <div class="ms-3 text-center">
-                                    <img src="<?= htmlspecialchars($match['logo2']) ?>" alt="Logo <?= htmlspecialchars($match['equipe2']) ?>" class="img-fluid" style="width: 50px;">
-                                    <p class="mt-2"><strong><?= htmlspecialchars($match['equipe2']) ?></strong></p>
-                                </div>
-                            </div>
+        <h2 class="mb-4 text-center">Matchs de Botola Pro</h2>
+        <div class="match-list">
+            <?php foreach ($matchs as $match) : ?>
+                <div class="match-card">
+                    <!-- Date et Heure -->
+                    <div class="match-info">
+                    <?php
+                        if (isset($match['match_date'])) {
+                        $formatted_date = date('d/m/Y', strtotime($match['match_date']));
+                  } else {
+                        $formatted_date = "Date inconnue";
+                }
+
+                    if (!empty($match['match_time']) && $match['match_time'] !== "00:00:00") {
+                    $formatted_time = date('H:i', strtotime($match['match_time']));
+                } else {
+                   $formatted_time = ''; // On ne l'affiche pas si c'est 00:00:00
+                }
+
+               // Affichage final
+               $display_date = $formatted_date . (!empty($formatted_time) ? " " . $formatted_time : '');
+          ?>
+              <span><?= $display_date ?></span>
+
+                    </div>
+                    <!-- Logos des équipes -->
+                    <div class="match-content">
+                        <div class="team">
+                            <img src="<?= htmlspecialchars($match['logo1']) ?>" alt="Équipe 1">
+                            <p class="team-name"><?= htmlspecialchars($match['equipe1']) ?></p>
+                        </div>
+                        <div class="match-vs">VS</div>
+                        <div class="team">
+                            <img src="<?= htmlspecialchars($match['logo2']) ?>" alt="Équipe 2">
+                            <p class="team-name"><?= htmlspecialchars($match['equipe2']) ?></p>
                         </div>
                     </div>
-                <?php endforeach; ?>
-            </div>
+                    <!-- Bouton Détails -->
+                    <a href="match_details.php?id=<?= $match['id'] ?>" class="match-details-btn">Détails</a>
+                </div>
+            <?php endforeach; ?>
         </div>
     </div>
 </section>
+
 
 
 <!-- Pied de page -->

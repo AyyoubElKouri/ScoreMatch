@@ -91,6 +91,7 @@ $nb_equipes = $pdo->query("SELECT COUNT(*) FROM equipes")->fetchColumn();
     <a href="tournoi_dashboard.php"><i class="fas fa-home"></i> Dashboard</a>
     <a href="admin_publication.php"><i class="fas fa-newspaper"></i> Gérer les Publications</a>
     <a href="admin_matchs.php"><i class="fas fa-futbol"></i> Gérer les Matchs</a>
+    <a href="admin_resultat.php"><i class="fas fa-users"></i> Gérer scores</a>
     <hr class="text-white">
     <a href="logout.php" class="text-danger"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
 </div>

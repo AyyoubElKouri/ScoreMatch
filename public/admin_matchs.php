@@ -13,13 +13,21 @@ $equipes = $pdo->query("SELECT id, nom FROM equipes ORDER BY nom")->fetchAll(PDO
 
 // Récupération des matchs pour affichage
 $matchs = $pdo->query("
-    SELECT m.id, m.equipe1_id, m.equipe2_id, m.stade_id, e1.nom AS equipe1, e2.nom AS equipe2, s.nom AS stade, m.date_match, m.heure
+    SELECT m.id, m.equipe1_id, m.equipe2_id, m.stade_id, e1.nom AS equipe1, e2.nom AS equipe2, 
+           s.nom AS stade, m.date_match, m.heure, m.arbitre_id, a.nom AS arbitre
     FROM matches m
     JOIN equipes e1 ON m.equipe1_id = e1.id
     JOIN equipes e2 ON m.equipe2_id = e2.id
     LEFT JOIN stades s ON m.stade_id = s.id
+    LEFT JOIN arbitres a ON m.arbitre_id = a.id
     ORDER BY m.date_match DESC
 ")->fetchAll(PDO::FETCH_ASSOC);
+
+
+
+// Récupération des arbitres pour l'affectation
+$arbitres = $pdo->query("SELECT id, nom FROM arbitres ORDER BY nom")->fetchAll(PDO::FETCH_ASSOC);
+
 
 
 
@@ -30,14 +38,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ajouter_match'])) {
   $date_match = $_POST['date_match'];
   $heure_match = $_POST['heure'];
   $stade_id = $_POST['stade'];
+  $arbitre_id = !empty($_POST['arbitre_id']) ? $_POST['arbitre_id'] : NULL;
+
 
   if ($equipe1_id == $equipe2_id) {
       $error = "Une équipe ne peut pas jouer contre elle-même.";
   } elseif (empty($heure_match) || empty($stade_id)) {
       $error = "L'heure et le stade du match sont obligatoires.";
   } else {
-      $stmt = $pdo->prepare("INSERT INTO matches (equipe1_id, equipe2_id, date_match, heure, stade_id) VALUES (?, ?, ?, ?, ?)");
-      if ($stmt->execute([$equipe1_id, $equipe2_id, $date_match, $heure_match, $stade_id])) {
+    $stmt = $pdo->prepare("INSERT INTO matches (equipe1_id, equipe2_id, date_match, heure, stade_id, arbitre_id) VALUES (?, ?, ?, ?, ?, ?)");
+      if ($stmt->execute([$equipe1_id, $equipe2_id, $date_match, $heure_match, $stade_id, $arbitre_id])) {
           header("Location: admin_matchs.php");
           exit();
       } else {
@@ -45,6 +55,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ajouter_match'])) {
       }
   }
 }
+
+// Ajouter un match avec un arbitre
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ajouter_match'])) {
+  $equipe1_id = $_POST['equipe1'];
+  $equipe2_id = $_POST['equipe2'];
+  $date_match = $_POST['date_match'];
+  $heure_match = $_POST['heure'];
+  $stade_id = $_POST['stade'];
+  $arbitre_id = !empty($_POST['arbitre_id']) ? $_POST['arbitre_id'] : NULL;
+
+  if ($equipe1_id == $equipe2_id) {
+      $error = "Une équipe ne peut pas jouer contre elle-même.";
+  } elseif (empty($heure_match) || empty($stade_id)) {
+      $error = "L'heure et le stade du match sont obligatoires.";
+  } else {
+      $stmt = $pdo->prepare("INSERT INTO matches (equipe1_id, equipe2_id, date_match, heure, stade_id, arbitre_id) VALUES (?, ?, ?, ?, ?, ?)");
+      if ($stmt->execute([$equipe1_id, $equipe2_id, $date_match, $heure_match, $stade_id, $arbitre_id])) {
+          header("Location: admin_matchs.php");
+          exit();
+      } else {
+          $error = "Erreur lors de l'ajout du match.";
+      }
+  }
+}
+
 
 
 // Supprimer un match
@@ -55,8 +90,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['supprimer_match'])) {
     exit();
 }
 
-// Modifier un match
 
+
+// Modifier un match avec l'arbitre
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['modifier_match'])) {
   $match_id = $_POST['match_id'];
   $equipe1_id = $_POST['equipe1'];
@@ -64,6 +100,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['modifier_match'])) {
   $date_match = $_POST['date_match'];
   $heure_match = $_POST['heure'];
   $stade_id = $_POST['stade'];
+  $arbitre_id = !empty($_POST['arbitre_id']) ? $_POST['arbitre_id'] : NULL;
 
   if ($equipe1_id == $equipe2_id) {
       $error = "Une équipe ne peut pas jouer contre elle-même.";
@@ -72,10 +109,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['modifier_match'])) {
   } else {
       $stmt = $pdo->prepare("
           UPDATE matches 
-          SET equipe1_id = ?, equipe2_id = ?, date_match = ?, heure = ?, stade_id = ?
+          SET equipe1_id = ?, equipe2_id = ?, date_match = ?, heure = ?, stade_id = ?, arbitre_id = ?
           WHERE id = ?
       ");
-      if ($stmt->execute([$equipe1_id, $equipe2_id, $date_match, $heure_match, $stade_id, $match_id])) {
+      if ($stmt->execute([$equipe1_id, $equipe2_id, $date_match, $heure_match, $stade_id, $arbitre_id, $match_id])) {
           header("Location: admin_matchs.php");
           exit();
       } else {
@@ -83,6 +120,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['modifier_match'])) {
       }
   }
 }
+
+
+
 
 
 ?>
@@ -120,6 +160,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['modifier_match'])) {
                 <th>Équipe 1</th>
                 <th>Équipe 2</th>
                 <th>Date & Heure</th>
+                <th>Arbitre</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -130,6 +171,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['modifier_match'])) {
                   <td><?= htmlspecialchars($match['equipe1']) ?></td>
                   <td><?= htmlspecialchars($match['equipe2']) ?></td>
                   <td><?= htmlspecialchars($match['date_match'] . ' ' . $match['heure']) ?></td>
+                  <td><?= !empty($match['arbitre']) ? htmlspecialchars($match['arbitre']) : "Non assigné" ?></td>
+
                   <td>
                        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editMatchModal<?= $match['id'] ?>">Modifier</button>
                    <form method="post" class="d-inline">
@@ -186,6 +229,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['modifier_match'])) {
                  <option value="<?= $stade['id'] ?>"><?= htmlspecialchars($stade['nom']) ?></option>
                <?php endforeach; ?>
                </select>
+               <label>Arbitre</label>
+<select name="arbitre_id" class="form-control">
+    <option value="">-- Sélectionner --</option>
+    <?php foreach ($arbitres as $arbitre) : ?>
+        <option value="<?= $arbitre['id'] ?>" <?= (isset($match['arbitre_id']) && $arbitre['id'] == $match['arbitre_id']) ? 'selected' : '' ?>>
+            <?= htmlspecialchars($arbitre['nom']) ?>
+        </option>
+    <?php endforeach; ?>
+</select>
+
+
 
                     </div>
                     <div class="modal-footer">
@@ -238,6 +292,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['modifier_match'])) {
                     <select name="stade" id="stade" class="form-control" required>
                         <option value="">-- Sélectionner --</option>
                     </select>
+                    <label>Arbitre</label>
+<select name="arbitre_id" class="form-control">
+    <option value="">-- Sélectionner --</option>
+    <?php foreach ($arbitres as $arbitre) : ?>
+        <option value="<?= $arbitre['id'] ?>"><?= htmlspecialchars($arbitre['nom']) ?></option>
+    <?php endforeach; ?>
+</select>
+
                 </div>
                 <div class="modal-footer">
                     <button type="submit" name="ajouter_match" class="btn btn-success">Ajouter</button>
