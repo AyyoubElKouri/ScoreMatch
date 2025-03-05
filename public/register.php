@@ -66,7 +66,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <label class="form-label">Rôle</label>
             <select name="role" class="form-control">
                 <option value="user">Utilisateur</option>
-                <option value="admin_tournoi">Admin Tournoi</option>
+                <!-- <option value="admin_tournoi">Admin Tournoi</option> -->
             </select>
         </div>
         <button type="submit" class="btn btn-success w-100">S'inscrire</button>

@@ -2,6 +2,12 @@
 session_start();
 require_once '../config/database.php';
 
+// Ajouter la fonction de redirection
+function redirect($url) {
+    echo "<script>window.location.replace('$url');</script>";
+    exit();
+}
+
 // Vérification du rôle admin_global
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin_tournoi') {
     header("Location: index.php");
@@ -33,28 +39,58 @@ $arbitres = $pdo->query("SELECT id, nom FROM arbitres ORDER BY nom")->fetchAll(P
 
 // Ajouter un match
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ajouter_match'])) {
-  $equipe1_id = $_POST['equipe1'];
-  $equipe2_id = $_POST['equipe2'];
-  $date_match = $_POST['date_match'];
-  $heure_match = $_POST['heure'];
-  $stade_id = $_POST['stade'];
-  $arbitre_id = !empty($_POST['arbitre_id']) ? $_POST['arbitre_id'] : NULL;
+    $equipe1_id = $_POST['equipe1'];
+    $equipe2_id = $_POST['equipe2'];
+    $date_match = $_POST['date_match'];
+    $heure_match = $_POST['heure'];
+    $stade_id = $_POST['stade'];
+    $arbitre_id = !empty($_POST['arbitre_id']) ? $_POST['arbitre_id'] : NULL;
 
+    if ($equipe1_id == $equipe2_id) {
+        $error = "Une équipe ne peut pas jouer contre elle-même.";
+    } elseif (empty($heure_match) || empty($stade_id)) {
+        $error = "L'heure et le stade du match sont obligatoires.";
+    } else {
+        // ✅ Vérifier si la requête SQL est bien préparée
+        $stmt = $pdo->prepare("INSERT INTO matches (equipe1_id, equipe2_id, date_match, heure, stade_id, arbitre_id) 
+                               VALUES (?, ?, ?, ?, ?, ?)");
 
-  if ($equipe1_id == $equipe2_id) {
-      $error = "Une équipe ne peut pas jouer contre elle-même.";
-  } elseif (empty($heure_match) || empty($stade_id)) {
-      $error = "L'heure et le stade du match sont obligatoires.";
-  } else {
-    $stmt = $pdo->prepare("INSERT INTO matches (equipe1_id, equipe2_id, date_match, heure, stade_id, arbitre_id) VALUES (?, ?, ?, ?, ?, ?)");
-      if ($stmt->execute([$equipe1_id, $equipe2_id, $date_match, $heure_match, $stade_id, $arbitre_id])) {
-          header("Location: admin_matchs.php");
-          exit();
-      } else {
-          $error = "Erreur lors de l'ajout du match.";
-      }
-  }
+        if ($stmt) { // Vérification avant d'exécuter
+            $stmt->execute([$equipe1_id, $equipe2_id, $date_match, $heure_match, $stade_id, $arbitre_id]);
+
+            // ✅ Insérer les joueurs sélectionnés après l'ajout du match
+            $match_id = $pdo->lastInsertId(); // Récupérer l'ID du match inséré
+
+            if (!empty($_POST['joueurs'])) {
+                $stmt_joueur = $pdo->prepare("INSERT INTO match_joueurs (match_id, joueur_id) VALUES (?, ?)");
+                foreach ($_POST['joueurs'] as $joueur_id) {
+                    $stmt_joueur->execute([$match_id, $joueur_id]);
+                }
+            }
+
+            redirect("admin_matchs.php");
+        } else {
+            $error = "Erreur lors de la préparation de la requête d'ajout de match.";
+        }
+    }
 }
+
+// if ($stmt->execute([$equipe1_id, $equipe2_id, $date_match, $heure_match, $stade_id, $arbitre_id])) {
+//     $match_id = $pdo->lastInsertId(); // Récupérer l'ID du match inséré
+
+//     // Vérifier si des joueurs ont été sélectionnés
+//     if (!empty($_POST['joueurs'])) {
+//         $stmt_joueur = $pdo->prepare("INSERT INTO match_joueurs (match_id, joueur_id) VALUES (?, ?)");
+//         foreach ($_POST['joueurs'] as $joueur_id) {
+//             $stmt_joueur->execute([$match_id, $joueur_id]);
+//         }
+//     }
+
+//     redirect("admin_matchs.php");
+// } else {
+//     $error = "Erreur lors de l'ajout du match.";
+// }
+
 
 // Ajouter un match avec un arbitre
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ajouter_match'])) {
@@ -72,8 +108,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ajouter_match'])) {
   } else {
       $stmt = $pdo->prepare("INSERT INTO matches (equipe1_id, equipe2_id, date_match, heure, stade_id, arbitre_id) VALUES (?, ?, ?, ?, ?, ?)");
       if ($stmt->execute([$equipe1_id, $equipe2_id, $date_match, $heure_match, $stade_id, $arbitre_id])) {
-          header("Location: admin_matchs.php");
-          exit();
+        redirect("admin_matchs.php");
+
       } else {
           $error = "Erreur lors de l'ajout du match.";
       }
@@ -86,8 +122,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ajouter_match'])) {
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['supprimer_match'])) {
     $stmt = $pdo->prepare("DELETE FROM matches WHERE id = ?");
     $stmt->execute([$_POST['match_id']]);
-    header("Location: admin_matchs.php");
-    exit();
+    redirect("admin_matchs.php");
+
 }
 
 
@@ -113,18 +149,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['modifier_match'])) {
           WHERE id = ?
       ");
       if ($stmt->execute([$equipe1_id, $equipe2_id, $date_match, $heure_match, $stade_id, $arbitre_id, $match_id])) {
-          header("Location: admin_matchs.php");
-          exit();
+        redirect("admin_matchs.php");
+
+
+        
       } else {
           $error = "Erreur lors de la modification du match.";
       }
   }
 }
-
-
-
-
-
 ?>
 
 <!DOCTYPE html>
@@ -282,6 +315,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['modifier_match'])) {
                         <?php endforeach; ?>
                     </select>
 
+            
+
+                    
+
                     <label>Date du Match</label>
                     <input type="date" name="date_match" class="form-control" required>
 
@@ -292,6 +329,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['modifier_match'])) {
                     <select name="stade" id="stade" class="form-control" required>
                         <option value="">-- Sélectionner --</option>
                     </select>
+              
+
+
                     <label>Arbitre</label>
 <select name="arbitre_id" class="form-control">
     <option value="">-- Sélectionner --</option>
@@ -300,14 +340,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['modifier_match'])) {
     <?php endforeach; ?>
 </select>
 
+         
+
                 </div>
+
+                <div id="joueursSelection" style="display:none;">
+    <h5 class="mt-3">Sélectionner les joueurs participants</h5>
+    
+    <label>Joueurs de l'Équipe 1</label>
+    <div id="joueursEquipe1" class="border p-2 mb-3"></div>
+
+    <label>Joueurs de l'Équipe 2</label>
+    <div id="joueursEquipe2" class="border p-2 mb-3"></div>
+</div>
+
                 <div class="modal-footer">
                     <button type="submit" name="ajouter_match" class="btn btn-success">Ajouter</button>
                 </div>
+
+                
             </form>
         </div>
     </div>
 </div>
+
+
 
 
 <script>
@@ -330,8 +387,42 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    document.getElementById("equipe1").addEventListener("change", chargerStades);
-    document.getElementById("equipe2").addEventListener("change", chargerStades);
+    function chargerJoueurs() {
+        let equipe1 = document.getElementById("equipe1").value;
+        let equipe2 = document.getElementById("equipe2").value;
+        let joueursEquipe1Div = document.getElementById("joueursEquipe1");
+        let joueursEquipe2Div = document.getElementById("joueursEquipe2");
+        let joueursSelectionDiv = document.getElementById("joueursSelection");
+
+        if (equipe1 && equipe2) {
+            joueursSelectionDiv.style.display = "block"; // Afficher la sélection des joueurs
+
+            fetch("get_joueurs.php?equipe1=" + equipe1 + "&equipe2=" + equipe2)
+                .then(response => response.json())
+                .then(data => {
+                    joueursEquipe1Div.innerHTML = "<p><strong>Joueurs Équipe 1</strong></p>";
+                    data.equipe1.forEach(joueur => {
+                        joueursEquipe1Div.innerHTML += `<input type="checkbox" name="joueurs[]" value="${joueur.id}"> ${joueur.nom} ${joueur.prenom}<br>`;
+                    });
+
+                    joueursEquipe2Div.innerHTML = "<p><strong>Joueurs Équipe 2</strong></p>";
+                    data.equipe2.forEach(joueur => {
+                        joueursEquipe2Div.innerHTML += `<input type="checkbox" name="joueurs[]" value="${joueur.id}"> ${joueur.nom} ${joueur.prenom}<br>`;
+                    });
+                })
+                .catch(error => console.error("Erreur lors du chargement des joueurs :", error));
+        } else {
+            joueursSelectionDiv.style.display = "none";
+        }
+    }
+
+    function chargerInfosMatch() {
+        chargerStades();
+        chargerJoueurs();
+    }
+
+    document.getElementById("equipe1").addEventListener("change", chargerInfosMatch);
+    document.getElementById("equipe2").addEventListener("change", chargerInfosMatch);
 });
 </script>
 

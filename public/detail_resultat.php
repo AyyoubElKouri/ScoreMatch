@@ -64,7 +64,9 @@ $evenements = $stmt_events->fetchAll(PDO::FETCH_ASSOC);
                 </div>
                 <div class="col-4">
                     <h3><?= htmlspecialchars($match['score_equipe1']) ?> - <?= htmlspecialchars($match['score_equipe2']) ?></h3>
-                    <p class="text-muted"><?= date('d/m/Y H:i', strtotime($match['date_match'])) ?></p>
+                    <p class="text-muted">
+                 <?= date('d/m/Y', strtotime($match['date_match'])) . " " . substr($match['heure'], 0, 5); ?>
+               </p>
                 </div>
                 <div class="col-4">
                     <img src="<?= htmlspecialchars($match['logo2']) ?>" class="img-fluid" alt="Équipe 2">
@@ -116,7 +118,7 @@ $evenements = $stmt_events->fetchAll(PDO::FETCH_ASSOC);
 
 
 
-<h3 class="mt-4">🟥 Cartons</h3>
+<h3 class="mt-4">Cartons</h3>
 <div class="row">
     <!-- Cartons de l'équipe 1 -->
     <div class="col-md-6">

@@ -13,6 +13,7 @@ $match_id = $_GET['id'];
 // Récupérer les détails du match
 $query = "
     SELECT m.id, m.date_match, m.heure, 
+           m.equipe1_id, m.equipe2_id,  -- Ajout de ces colonnes
            e1.nom AS equipe1, e1.logo AS logo1, 
            e2.nom AS equipe2, e2.logo AS logo2, 
            s.nom AS stade, s.ville, s.capacite, s.image AS stade_logo
@@ -22,6 +23,7 @@ $query = "
     LEFT JOIN stades s ON m.stade_id = s.id
     WHERE m.id = ?
 ";
+
 
 $stmt = $pdo->prepare($query);
 $stmt->execute([$match_id]);
@@ -51,27 +53,30 @@ $matchs_par_equipe = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Récupérer les joueurs de l'équipe 1
     try {
-      // Récupérer les joueurs de l'équipe 1 du match
-      $stmt_joueurs_equipe1 = $pdo->prepare("
-          SELECT j.nom, j.prenom, j.age, j.position
-          FROM joueurs j
-          JOIN matches m ON j.equipe_id = m.equipe1_id
-          WHERE m.id = ?
-          ORDER BY j.position
-      ");
-      $stmt_joueurs_equipe1->execute([$match_id]);
-      $joueurs_equipe1 = $stmt_joueurs_equipe1->fetchAll(PDO::FETCH_ASSOC);
-  
-      // Récupérer les joueurs de l'équipe 2 du match
-      $stmt_joueurs_equipe2 = $pdo->prepare("
-          SELECT j.nom, j.prenom, j.age, j.position
-          FROM joueurs j
-          JOIN matches m ON j.equipe_id = m.equipe2_id
-          WHERE m.id = ?
-          ORDER BY j.position
-      ");
-      $stmt_joueurs_equipe2->execute([$match_id]);
-      $joueurs_equipe2 = $stmt_joueurs_equipe2->fetchAll(PDO::FETCH_ASSOC);
+        // Récupérer les joueurs de l'équipe 1 du match
+// Récupérer les joueurs sélectionnés pour l'équipe 1
+$stmt_joueurs_equipe1 = $pdo->prepare("
+    SELECT j.id, j.nom, j.prenom
+    FROM joueurs j
+    JOIN match_joueurs mj ON j.id = mj.joueur_id
+    WHERE mj.match_id = ? AND j.equipe_id = ?
+    ORDER BY j.nom
+");
+$stmt_joueurs_equipe1->execute([$match_id, $match['equipe1_id']]);
+$joueurs_equipe1 = $stmt_joueurs_equipe1->fetchAll(PDO::FETCH_ASSOC);
+
+// Récupérer les joueurs sélectionnés pour l'équipe 2
+$stmt_joueurs_equipe2 = $pdo->prepare("
+    SELECT j.id, j.nom, j.prenom
+    FROM joueurs j
+    JOIN match_joueurs mj ON j.id = mj.joueur_id
+    WHERE mj.match_id = ? AND j.equipe_id = ?
+    ORDER BY j.nom
+");
+$stmt_joueurs_equipe2->execute([$match_id, $match['equipe2_id']]);
+$joueurs_equipe2 = $stmt_joueurs_equipe2->fetchAll(PDO::FETCH_ASSOC);
+
+
   } catch (PDOException $e) {
       die("Erreur lors de la récupération des joueurs : " . $e->getMessage());
   }
@@ -204,6 +209,7 @@ $matchs_par_equipe = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </section>
 
 <!-- Liste des joueurs de chaque équipe -->
+
 <!-- Liste des joueurs de chaque équipe -->
 <section class="py-5">
     <div class="container">
@@ -217,24 +223,23 @@ $matchs_par_equipe = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <table class="table table-striped table-hover">
                         <thead class="table-dark">
                             <tr>
-                                <th>Nom</th>
-                                <th>Prénom</th>
-                                <th>Âge</th>
-                                <th>Position</th>
+                                <th>Nom du joueur</th> <!-- Seulement le nom avec un lien -->
                             </tr>
                         </thead>
                         <tbody>
                             <?php if (!empty($joueurs_equipe1)) : ?>
                                 <?php foreach ($joueurs_equipe1 as $joueur) : ?>
                                     <tr>
-                                        <td><?= htmlspecialchars($joueur["nom"]) ?></td>
-                                        <td><?= htmlspecialchars($joueur["prenom"]) ?></td>
-                                        <td><?= htmlspecialchars($joueur["age"]) ?></td>
-                                        <td><?= htmlspecialchars($joueur["position"]) ?></td>
+                                        <td>
+                                            <a href="joueur_details.php?id=<?= htmlspecialchars($joueur['id']) ?>" 
+                                               class="text-decoration-none">
+                                                <?= htmlspecialchars($joueur["nom"]) . " " . htmlspecialchars($joueur["prenom"]) ?>
+                                            </a>
+                                        </td>
                                     </tr>
                                 <?php endforeach; ?>
                             <?php else : ?>
-                                <tr><td colspan="4" class="text-center">Aucun joueur trouvé.</td></tr>
+                                <tr><td colspan="1" class="text-center">Aucun joueur trouvé.</td></tr>
                             <?php endif; ?>
                         </tbody>
                     </table>
@@ -248,24 +253,23 @@ $matchs_par_equipe = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <table class="table table-striped table-hover">
                         <thead class="table-dark">
                             <tr>
-                                <th>Nom</th>
-                                <th>Prénom</th>
-                                <th>Âge</th>
-                                <th>Position</th>
+                                <th>Nom du joueur</th> <!-- Seulement le nom avec un lien -->
                             </tr>
                         </thead>
                         <tbody>
                             <?php if (!empty($joueurs_equipe2)) : ?>
                                 <?php foreach ($joueurs_equipe2 as $joueur) : ?>
                                     <tr>
-                                        <td><?= htmlspecialchars($joueur["nom"]) ?></td>
-                                        <td><?= htmlspecialchars($joueur["prenom"]) ?></td>
-                                        <td><?= htmlspecialchars($joueur["age"]) ?></td>
-                                        <td><?= htmlspecialchars($joueur["position"]) ?></td>
+                                        <td>
+                                            <a href="joueur_details.php?id=<?= htmlspecialchars($joueur['id']) ?>" 
+                                               class="text-decoration-none">
+                                                <?= htmlspecialchars($joueur["nom"]) . " " . htmlspecialchars($joueur["prenom"]) ?>
+                                            </a>
+                                        </td>
                                     </tr>
                                 <?php endforeach; ?>
                             <?php else : ?>
-                                <tr><td colspan="4" class="text-center">Aucun joueur trouvé.</td></tr>
+                                <tr><td colspan="1" class="text-center">Aucun joueur trouvé.</td></tr>
                             <?php endif; ?>
                         </tbody>
                     </table>
@@ -274,6 +278,7 @@ $matchs_par_equipe = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
 </section>
+
 
 
 <!-- Pied de page -->

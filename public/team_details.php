@@ -30,13 +30,15 @@ try {
 ?>
 <?php
 try {
-    // Requête pour récupérer les joueurs de l'équipe
-    $stmt_joueurs = $pdo->prepare("
-        SELECT nom, prenom, age, position 
-        FROM joueurs 
-        WHERE equipe_id = ?
-        ORDER BY position
-    ");
+
+        // Sélectionnez également l'ID du joueur pour générer des liens valides
+        $stmt_joueurs = $pdo->prepare("
+            SELECT id, nom, prenom, age, position 
+            FROM joueurs 
+            WHERE equipe_id = ?
+            ORDER BY position
+        ");
+    
     //exécution de la requête
     $stmt_joueurs->execute([$id]);
     //récupération des résultats
@@ -181,19 +183,22 @@ try {
                 <table class="table table-striped table-hover">
                     <thead class="table-dark">
                         <tr>
-                            <th>Nom</th>
-                            <th>Prénom</th>
-                            <th>Âge</th>
-                            <th>Position</th>
+                            <th>Nom du joueur</th> <!-- Seulement le nom en tant que lien -->
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($joueurs as $joueur) : ?>
                             <tr>
-                                <td><?= htmlspecialchars($joueur["nom"]) ?></td>
-                                <td><?= htmlspecialchars($joueur["prenom"]) ?></td>
-                                <td><?= htmlspecialchars($joueur["age"]) ?></td>
-                                <td><?= htmlspecialchars($joueur["position"]) ?></td>
+                                <td>
+                                    <?php if (isset($joueur['id'])) : ?> <!-- Vérification que l'ID est bien défini -->
+                                        <a href="joueur_details.php?id=<?= urlencode($joueur['id']) ?>" 
+                                           class="text-decoration-none">
+                                            <?= htmlspecialchars($joueur["nom"]) . " " . htmlspecialchars($joueur["prenom"]) ?>
+                                        </a>
+                                    <?php else : ?>
+                                        <span class="text-danger">Erreur : ID joueur manquant</span>
+                                    <?php endif; ?>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -206,6 +211,7 @@ try {
         <p>Aucun joueur trouvé pour cette équipe.</p>
     </div>
 <?php endif; ?>
+
 
 <!-- Liste des membres du staff de l'équipe -->
 

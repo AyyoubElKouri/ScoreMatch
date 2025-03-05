@@ -147,7 +147,9 @@ body.dark-mode {
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item"><a class="nav-link" href="index.php">Accueil</a></li>
                 <li class="nav-item"><a class="nav-link" href="calendrier.php">calendrier</a></li>
-                <li class="nav-item"><a class="nav-link" href="teams.php">Équipes</a></li>
+                <!-- <li class="nav-item"><a class="nav-link" href="teams.php">Équipes</a></li>
+                <li class="nav-item"><a class="nav-link" href="players.php">Joueurs</a></li> -->
+                <li class="nav-item"><a class="nav-link" href="recherche.php">recherche</a></li>
                 <li class="nav-item"><a class="nav-link" href="tournaments.php">Tournois</a></li>
                 <li class="nav-item"><a class="nav-link" href="classement.php">Classement</a></li>
                 <li class="nav-item"><a class="nav-link" href="resultats.php">Résultats</a></li>
