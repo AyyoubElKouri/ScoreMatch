@@ -2,6 +2,16 @@
 session_start();
 require_once '../config/database.php';
 
+// Vérifier s'il y a un message de confirmation à afficher
+if (isset($_SESSION['message'])) {
+    echo '<div class="alert alert-success alert-dismissible fade show text-center" role="alert">';
+    echo $_SESSION['message']; // Afficher le message
+    echo '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+    echo '</div>';
+    
+    unset($_SESSION['message']); // Supprimer le message après l'affichage
+}
+
 // Récupérer tous les matchs depuis la base de données
 $matchs = $pdo->query("
     SELECT m.id, e1.nom AS equipe1, e2.nom AS equipe2, e1.logo AS logo1, e2.logo AS logo2, 
@@ -34,7 +44,7 @@ $matchs = $pdo->query("
 <?php include 'navbar.php'; ?>
 
 
-<!-- Section des matchs -->
+
 <!-- Section des matchs -->
 <section class="py-5">
     <div class="container">
@@ -76,8 +86,19 @@ $matchs = $pdo->query("
                             <p class="team-name"><?= htmlspecialchars($match['equipe2']) ?></p>
                         </div>
                     </div>
+
+                     <!-- 🔔 Ajouter le bouton S’abonner ici -->
+        <?php if (isset($_SESSION['user_id'])) : ?>
+            <form method="post" action="abonnement.php">
+                <input type="hidden" name="match_id" value="<?= $match['id'] ?>">
+                <button type="submit" class="btn btn-primary">
+                    🔔
+                </button>
+            </form>
+        <?php endif; ?>
                    
                 </div>
+
             <?php endforeach; ?>
         </div>
     </div>

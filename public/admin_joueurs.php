@@ -41,7 +41,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && (isset($_POST['update']) || isset($_
   $equipe_id = isset($_POST['equipe_id']) ? intval($_POST['equipe_id']) : null;
 
   if (empty($nom) || empty($prenom) || empty($position) || !$equipe_id) {
-      $_SESSION['message'] = "❌ Tous les champs sont obligatoires.";
+      $_SESSION['message'] = " Tous les champs sont obligatoires.";
       header("Location: admin_joueurs.php");
       exit();
   }
@@ -77,7 +77,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 // Transférer un joueur à une autre équipe
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['transferer'])) {
   if (!isset($_POST['joueur_id']) || !isset($_POST['nouvelle_equipe'])) {
-      $_SESSION['message'] = "❌ Erreur : Données manquantes pour le transfert.";
+      $_SESSION['message'] = " Erreur : Données manquantes pour le transfert.";
       header("Location: admin_joueurs.php");
       exit();
   }
@@ -89,7 +89,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['transferer'])) {
   $stmt = $pdo->prepare("SELECT id FROM joueurs WHERE id = ?");
   $stmt->execute([$joueur_id]);
   if ($stmt->rowCount() === 0) {
-      $_SESSION['message'] = "❌ Erreur : Joueur introuvable.";
+      $_SESSION['message'] = " Erreur : Joueur introuvable.";
       header("Location: admin_joueurs.php");
       exit();
   }
@@ -98,7 +98,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['transferer'])) {
   $stmt = $pdo->prepare("SELECT id FROM equipes WHERE id = ?");
   $stmt->execute([$nouvelle_equipe]);
   if ($stmt->rowCount() === 0) {
-      $_SESSION['message'] = "❌ Erreur : Équipe invalide.";
+      $_SESSION['message'] = " Erreur : Équipe invalide.";
       header("Location: admin_joueurs.php");
       exit();
   }
@@ -108,9 +108,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['transferer'])) {
   $stmt->execute([$nouvelle_equipe, $joueur_id]);
 
   if ($stmt->rowCount() > 0) {
-      $_SESSION['message'] = "✅ Joueur transféré avec succès.";
+      $_SESSION['message'] = " Joueur transféré avec succès.";
   } else {
-      $_SESSION['message'] = "⚠️ Aucun changement effectué.";
+      $_SESSION['message'] = " Aucun changement effectué.";
   }
 
   header("Location: admin_joueurs.php");

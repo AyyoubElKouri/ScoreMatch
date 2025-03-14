@@ -35,8 +35,6 @@ $matchs = $pdo->query("
 $arbitres = $pdo->query("SELECT id, nom FROM arbitres ORDER BY nom")->fetchAll(PDO::FETCH_ASSOC);
 
 
-
-
 // Ajouter un match
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ajouter_match'])) {
     $equipe1_id = $_POST['equipe1'];
@@ -61,12 +59,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ajouter_match'])) {
             // ✅ Insérer les joueurs sélectionnés après l'ajout du match
             $match_id = $pdo->lastInsertId(); // Récupérer l'ID du match inséré
 
-            if (!empty($_POST['joueurs'])) {
-                $stmt_joueur = $pdo->prepare("INSERT INTO match_joueurs (match_id, joueur_id) VALUES (?, ?)");
-                foreach ($_POST['joueurs'] as $joueur_id) {
-                    $stmt_joueur->execute([$match_id, $joueur_id]);
-                }
-            }
+            // Insérer les joueurs sélectionnés avec leur position
+   if (!empty($_POST['joueurs'])) {
+       $stmt_joueur = $pdo->prepare("INSERT INTO match_joueurs (match_id, joueur_id, position) VALUES (?, ?, ?)");
+    foreach ($_POST['joueurs'] as $joueur_id) {
+        $position = $_POST['position'][$joueur_id]; // Récupérer la position du joueur
+        $stmt_joueur->execute([$match_id, $joueur_id, $position]);
+    }
+}
+
 
             redirect("admin_matchs.php");
         } else {
@@ -271,11 +272,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['modifier_match'])) {
         </option>
     <?php endforeach; ?>
 </select>
-
-
-
-                    </div>
-                    <div class="modal-footer">
+    
+</div>
+          <div class="modal-footer">
                         <button type="submit" name="modifier_match" class="btn btn-success">Enregistrer</button>
                     </div>
                 </form>
@@ -328,9 +327,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['modifier_match'])) {
                     <label>Stade</label>
                     <select name="stade" id="stade" class="form-control" required>
                         <option value="">-- Sélectionner --</option>
-                    </select>
-              
-
+                    </select>            
 
                     <label>Arbitre</label>
 <select name="arbitre_id" class="form-control">
@@ -339,13 +336,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['modifier_match'])) {
         <option value="<?= $arbitre['id'] ?>"><?= htmlspecialchars($arbitre['nom']) ?></option>
     <?php endforeach; ?>
 </select>
-
-         
-
                 </div>
 
                 <div id="joueursSelection" style="display:none;">
-    <h5 class="mt-3">Sélectionner les joueurs participants</h5>
+    <h5 class="mt-3">Sélectionner les joueurs et leurs positions</h5>
     
     <label>Joueurs de l'Équipe 1</label>
     <div id="joueursEquipe1" class="border p-2 mb-3"></div>
@@ -366,67 +360,96 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['modifier_match'])) {
 
 
 
-
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    function chargerStades() {
-        let equipe1 = document.getElementById("equipe1").value;
-        let equipe2 = document.getElementById("equipe2").value;
-        let stadeSelect = document.getElementById("stade");
+function chargerInfosMatch() {
+    let equipe1 = document.getElementById("equipe1").value;
+    let equipe2 = document.getElementById("equipe2").value;
+    
+    chargerStades(equipe1, equipe2);
+    chargerJoueurs(equipe1, equipe2);
+}
 
-        if (equipe1 && equipe2) {
-            fetch("get_stades.php?equipe1=" + equipe1 + "&equipe2=" + equipe2)
-                .then(response => response.json())
-                .then(data => {
-                    stadeSelect.innerHTML = '<option value="">-- Sélectionner --</option>';
-                    data.forEach(stade => {
-                        stadeSelect.innerHTML += `<option value="${stade.id}">${stade.nom}</option>`;
-                    });
-                })
-                .catch(error => console.error("Erreur de chargement des stades:", error));
-        }
+// 🏟️ Charger les stades des équipes sélectionnées
+function chargerStades(equipe1, equipe2) {
+    let stadeSelect = document.getElementById("stade");
+
+    if (equipe1 && equipe2) {
+        fetch(`get_stades.php?equipe1=${equipe1}&equipe2=${equipe2}`)
+            .then(response => response.json())
+            .then(data => {
+                stadeSelect.innerHTML = '<option value="">-- Sélectionner --</option>';
+                data.forEach(stade => {
+                    stadeSelect.innerHTML += `<option value="${stade.id}">${stade.nom}</option>`;
+                });
+            })
+            .catch(error => console.error("Erreur lors du chargement des stades :", error));
+    } else {
+        stadeSelect.innerHTML = '<option value="">-- Sélectionner --</option>';
     }
+}
 
-    function chargerJoueurs() {
-        let equipe1 = document.getElementById("equipe1").value;
-        let equipe2 = document.getElementById("equipe2").value;
-        let joueursEquipe1Div = document.getElementById("joueursEquipe1");
-        let joueursEquipe2Div = document.getElementById("joueursEquipe2");
-        let joueursSelectionDiv = document.getElementById("joueursSelection");
+// ⚽ Charger les joueurs des équipes sélectionnées
+function chargerJoueurs(equipe1, equipe2) {
+    let joueursEquipe1Div = document.getElementById("joueursEquipe1");
+    let joueursEquipe2Div = document.getElementById("joueursEquipe2");
+    let joueursSelectionDiv = document.getElementById("joueursSelection");
 
-        if (equipe1 && equipe2) {
-            joueursSelectionDiv.style.display = "block"; // Afficher la sélection des joueurs
+    if (equipe1 && equipe2) {
+        joueursSelectionDiv.style.display = "block"; // Afficher la section joueurs
 
-            fetch("get_joueurs.php?equipe1=" + equipe1 + "&equipe2=" + equipe2)
-                .then(response => response.json())
-                .then(data => {
-                    joueursEquipe1Div.innerHTML = "<p><strong>Joueurs Équipe 1</strong></p>";
-                    data.equipe1.forEach(joueur => {
-                        joueursEquipe1Div.innerHTML += `<input type="checkbox" name="joueurs[]" value="${joueur.id}"> ${joueur.nom} ${joueur.prenom}<br>`;
-                    });
+        fetch(`get_joueurs.php?equipe1=${equipe1}&equipe2=${equipe2}`)
+            .then(response => response.json())
+            .then(data => {
+                joueursEquipe1Div.innerHTML = "<p><strong>Joueurs Équipe 1</strong></p>";
+                data.equipe1.forEach(joueur => {
+                    joueursEquipe1Div.innerHTML += `
+                        <input type="checkbox" name="joueurs[]" value="${joueur.id}"> 
+                        ${joueur.nom} ${joueur.prenom} 
+                        <select name="position[${joueur.id}]" class="form-select d-inline-block w-auto">
+                            <option value="Attaquant">Attaquant</option>
+                            <option value="Ailier droit">Ailier droit</option>
+                            <option value="Ailier gauche">Ailier gauche</option>
+                            <option value="Milieu défensif">Milieu défensif</option>
+                            <option value="Milieu central">Milieu central</option>
+                            <option value="Milieu offensif">Milieu offensif</option>
+                            <option value="Défenseur central">Défenseur central</option>
+                            <option value="Défenseur droit">Défenseur droit</option>
+                            <option value="Défenseur gauche">Défenseur gauche</option>
+                            <option value="Gardien">Gardien</option>
+                        </select>
+                        <br>`;
+                });
 
-                    joueursEquipe2Div.innerHTML = "<p><strong>Joueurs Équipe 2</strong></p>";
-                    data.equipe2.forEach(joueur => {
-                        joueursEquipe2Div.innerHTML += `<input type="checkbox" name="joueurs[]" value="${joueur.id}"> ${joueur.nom} ${joueur.prenom}<br>`;
-                    });
-                })
-                .catch(error => console.error("Erreur lors du chargement des joueurs :", error));
-        } else {
-            joueursSelectionDiv.style.display = "none";
-        }
+                joueursEquipe2Div.innerHTML = "<p><strong>Joueurs Équipe 2</strong></p>";
+                data.equipe2.forEach(joueur => {
+                    joueursEquipe2Div.innerHTML += `
+                        <input type="checkbox" name="joueurs[]" value="${joueur.id}"> 
+                        ${joueur.nom} ${joueur.prenom} 
+                        <select name="position[${joueur.id}]" class="form-select d-inline-block w-auto">
+                           <option value="Attaquant">Attaquant</option>
+                            <option value="Ailier droit">Ailier droit</option>
+                            <option value="Ailier gauche">Ailier gauche</option>
+                            <option value="Milieu défensif">Milieu défensif</option>
+                            <option value="Milieu central">Milieu central</option>
+                            <option value="Milieu offensif">Milieu offensif</option>
+                            <option value="Défenseur central">Défenseur central</option>
+                            <option value="Défenseur droit">Défenseur droit</option>
+                            <option value="Défenseur gauche">Défenseur gauche</option>
+                            <option value="Gardien">Gardien</option>
+                        </select>
+                        <br>`;
+                });
+            })
+            .catch(error => console.error("Erreur lors du chargement des joueurs :", error));
+    } else {
+        joueursSelectionDiv.style.display = "none";
     }
+}
 
-    function chargerInfosMatch() {
-        chargerStades();
-        chargerJoueurs();
-    }
-
-    document.getElementById("equipe1").addEventListener("change", chargerInfosMatch);
-    document.getElementById("equipe2").addEventListener("change", chargerInfosMatch);
-});
+// 🛠️ Ajouter les écouteurs d'événements
+document.getElementById("equipe1").addEventListener("change", chargerInfosMatch);
+document.getElementById("equipe2").addEventListener("change", chargerInfosMatch);
 </script>
-
-
 
 
 </body>

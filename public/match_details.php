@@ -54,9 +54,10 @@ $matchs_par_equipe = $stmt->fetchAll(PDO::FETCH_ASSOC);
     // Récupérer les joueurs de l'équipe 1
     try {
         // Récupérer les joueurs de l'équipe 1 du match
-// Récupérer les joueurs sélectionnés pour l'équipe 1
+
+// Récupérer les joueurs sélectionnés pour l'équipe 1 avec leur position
 $stmt_joueurs_equipe1 = $pdo->prepare("
-    SELECT j.id, j.nom, j.prenom
+    SELECT j.id, j.nom, j.prenom, mj.position
     FROM joueurs j
     JOIN match_joueurs mj ON j.id = mj.joueur_id
     WHERE mj.match_id = ? AND j.equipe_id = ?
@@ -65,9 +66,10 @@ $stmt_joueurs_equipe1 = $pdo->prepare("
 $stmt_joueurs_equipe1->execute([$match_id, $match['equipe1_id']]);
 $joueurs_equipe1 = $stmt_joueurs_equipe1->fetchAll(PDO::FETCH_ASSOC);
 
-// Récupérer les joueurs sélectionnés pour l'équipe 2
+
+// Récupérer les joueurs sélectionnés pour l'équipe 2 avec leur position
 $stmt_joueurs_equipe2 = $pdo->prepare("
-    SELECT j.id, j.nom, j.prenom
+    SELECT j.id, j.nom, j.prenom, mj.position
     FROM joueurs j
     JOIN match_joueurs mj ON j.id = mj.joueur_id
     WHERE mj.match_id = ? AND j.equipe_id = ?
@@ -80,8 +82,57 @@ $joueurs_equipe2 = $stmt_joueurs_equipe2->fetchAll(PDO::FETCH_ASSOC);
   } catch (PDOException $e) {
       die("Erreur lors de la récupération des joueurs : " . $e->getMessage());
   }
+
+  function afficherJoueursDynamiques($joueurs, $positions) {
+    $joueursFiltrés = array_filter($joueurs, function ($joueur) use ($positions) {
+        return in_array($joueur['position'], $positions);
+    });
+
+    $output = "";
+    foreach ($joueursFiltrés as $joueur) {
+        $output .= "<div class='joueur'>" . htmlspecialchars($joueur['nom']) . "</div>";
+    }
+
+    return $output;
+}
+function getSchemaTactique($joueurs) {
+    $count = [
+        "Gardien" => 0,
+        "Défenseur gauche" => 0,
+        "Défenseur central" => 0,
+        "Défenseur droit" => 0,
+        "Milieu défensif" => 0,
+        "Milieu central" => 0,
+        "Milieu offensif" => 0,
+        "Ailier gauche" => 0,
+        "Ailier droit" => 0,
+        "Attaquant" => 0
+    ];
+
+    foreach ($joueurs as $joueur) {
+        if (isset($count[$joueur['position']])) {
+            $count[$joueur['position']]++;
+        }
+    }
+
+    // Calculer le schéma de jeu en fonction du nombre de joueurs par ligne
+    return [
+        "gardien" => $count["Gardien"],
+        "defense" => $count["Défenseur gauche"] + $count["Défenseur central"] + $count["Défenseur droit"],
+        "milieu" => $count["Milieu défensif"] + $count["Milieu central"] + $count["Milieu offensif"],
+        "attaque" => $count["Ailier gauche"] + $count["Ailier droit"] + $count["Attaquant"]
+    ];
+}
+
+
+
+
+
   
 ?>
+
+
+
 
 
 <!DOCTYPE html>
@@ -149,6 +200,76 @@ $joueurs_equipe2 = $stmt_joueurs_equipe2->fetchAll(PDO::FETCH_ASSOC);
     filter: brightness(0.8);
 }
 
+
+/* 🌱 Terrain de football */
+.terrain {
+    width: 100%;
+    height: 500px;
+    background: #2e7d32;
+    border-radius: 15px;
+    position: relative;
+    margin: 20px auto;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 🌟 Zone interne du terrain */
+.terrain-inner {
+    width: 95%;
+    height: 95%;
+    background: #388e3c;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    position: relative;
+    padding: 10px 0;
+}
+
+/* 📍 Disposition des joueurs */
+.ligne {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+/* Ajustement des lignes */
+.ligne.gardien { margin-top: 10px; }
+.ligne.defense { margin-top: 30px; }
+.ligne.milieu { margin-top: 30px; }
+.ligne.attaque { margin-top: 30px; }
+
+/* 📌 Style des joueurs */
+.joueur {
+    background: white;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-weight: bold;
+    text-align: center;
+    color: black;
+    min-width: 100px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* 🎯 Spécial Gardien */
+.joueur.gardien {
+    background: #ff5722;
+    color: white;
+}
+
+/* 📌 Emplacement vide */
+.joueur.vide {
+    background: transparent;
+    box-shadow: none;
+    visibility: hidden;
+    width: 100px;
+}
+
+
+
     </style>
 </head>
 <body class="<?= isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'dark' ? 'dark-mode' : '' ?>">
@@ -208,7 +329,7 @@ $joueurs_equipe2 = $stmt_joueurs_equipe2->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </section>
 
-<!-- Liste des joueurs de chaque équipe -->
+
 
 <!-- Liste des joueurs de chaque équipe -->
 <section class="py-5">
@@ -224,24 +345,28 @@ $joueurs_equipe2 = $stmt_joueurs_equipe2->fetchAll(PDO::FETCH_ASSOC);
                         <thead class="table-dark">
                             <tr>
                                 <th>Nom du joueur</th> <!-- Seulement le nom avec un lien -->
+                                <th>position</th>
                             </tr>
+                            
                         </thead>
                         <tbody>
-                            <?php if (!empty($joueurs_equipe1)) : ?>
-                                <?php foreach ($joueurs_equipe1 as $joueur) : ?>
-                                    <tr>
-                                        <td>
-                                            <a href="joueur_details.php?id=<?= htmlspecialchars($joueur['id']) ?>" 
-                                               class="text-decoration-none">
-                                                <?= htmlspecialchars($joueur["nom"]) . " " . htmlspecialchars($joueur["prenom"]) ?>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php else : ?>
-                                <tr><td colspan="1" class="text-center">Aucun joueur trouvé.</td></tr>
-                            <?php endif; ?>
-                        </tbody>
+    <?php if (!empty($joueurs_equipe1)) : ?>
+        <?php foreach ($joueurs_equipe1 as $joueur) : ?>
+            <tr>
+                <td>
+                    <a href="joueur_details.php?id=<?= htmlspecialchars($joueur['id']) ?>" 
+                       class="text-decoration-none">
+                        <?= htmlspecialchars($joueur["nom"]) . " " . htmlspecialchars($joueur["prenom"]) ?>
+                    </a>
+                </td>
+                <td><?= htmlspecialchars($joueur["position"]) ?></td> <!-- Ajout de la position -->
+            </tr>
+        <?php endforeach; ?>
+    <?php else : ?>
+        <tr><td colspan="2" class="text-center">Aucun joueur trouvé.</td></tr>
+    <?php endif; ?>
+</tbody>
+
                     </table>
                 </div>
             </div>
@@ -254,30 +379,97 @@ $joueurs_equipe2 = $stmt_joueurs_equipe2->fetchAll(PDO::FETCH_ASSOC);
                         <thead class="table-dark">
                             <tr>
                                 <th>Nom du joueur</th> <!-- Seulement le nom avec un lien -->
+                                <th>position</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if (!empty($joueurs_equipe2)) : ?>
-                                <?php foreach ($joueurs_equipe2 as $joueur) : ?>
-                                    <tr>
-                                        <td>
-                                            <a href="joueur_details.php?id=<?= htmlspecialchars($joueur['id']) ?>" 
-                                               class="text-decoration-none">
-                                                <?= htmlspecialchars($joueur["nom"]) . " " . htmlspecialchars($joueur["prenom"]) ?>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php else : ?>
-                                <tr><td colspan="1" class="text-center">Aucun joueur trouvé.</td></tr>
-                            <?php endif; ?>
-                        </tbody>
+    <?php if (!empty($joueurs_equipe2)) : ?>
+        <?php foreach ($joueurs_equipe2 as $joueur) : ?>
+            <tr>
+                <td>
+                    <a href="joueur_details.php?id=<?= htmlspecialchars($joueur['id']) ?>" 
+                       class="text-decoration-none">
+                        <?= htmlspecialchars($joueur["nom"]) . " " . htmlspecialchars($joueur["prenom"]) ?>
+                    </a>
+                </td>
+                <td><?= htmlspecialchars($joueur["position"]) ?></td> <!-- Affichage de la position -->
+            </tr>
+        <?php endforeach; ?>
+    <?php else : ?>
+        <tr><td colspan="2" class="text-center">Aucun joueur trouvé.</td></tr>
+    <?php endif; ?>
+              </tbody>
+
                     </table>
                 </div>
             </div>
         </div>
     </div>
 </section>
+
+<?php
+$schema_equipe1 = getSchemaTactique($joueurs_equipe1);
+$schema_equipe2 = getSchemaTactique($joueurs_equipe2);
+?>
+
+
+
+
+<!-- 📌 Affichage des terrains pour les deux équipes -->
+<section class="py-5">
+    <div class="container">
+        <h3 class="text-center mb-4">🏟 Disposition des Joueurs sur le Terrain</h3>
+        <div class="row">
+            <!-- Terrain Équipe 1 -->
+            <div class="col-md-6">
+                <h4 class="text-center"><?= htmlspecialchars($match['equipe1']) ?></h4>
+                <div class="terrain">
+                    <div class="terrain-inner">
+                        <div class="ligne gardien">
+                            <?= afficherJoueursDynamiques($joueurs_equipe1, ["Gardien"]) ?>
+                        </div>
+                        <div class="ligne defense">
+                            <?= afficherJoueursDynamiques($joueurs_equipe1, ["Défenseur gauche", "Défenseur central", "Défenseur droit"]) ?>
+                        </div>
+                        <div class="ligne milieu">
+                            <?= afficherJoueursDynamiques($joueurs_equipe1, ["Milieu défensif", "Milieu central", "Milieu offensif"]) ?>
+                        </div>
+                        <div class="ligne attaque">
+                            <?= afficherJoueursDynamiques($joueurs_equipe1, ["Ailier gauche", "Ailier droit", "Attaquant"]) ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Terrain Équipe 2 -->
+            <div class="col-md-6">
+                <h4 class="text-center"><?= htmlspecialchars($match['equipe2']) ?></h4>
+                <div class="terrain">
+                    <div class="terrain-inner">
+                        <div class="ligne gardien">
+                            <?= afficherJoueursDynamiques($joueurs_equipe2, ["Gardien"]) ?>
+                        </div>
+                        <div class="ligne defense">
+                            <?= afficherJoueursDynamiques($joueurs_equipe2, ["Défenseur gauche", "Défenseur central", "Défenseur droit"]) ?>
+                        </div>
+                        <div class="ligne milieu">
+                            <?= afficherJoueursDynamiques($joueurs_equipe2, ["Milieu défensif", "Milieu central", "Milieu offensif"]) ?>
+                        </div>
+                        <div class="ligne attaque">
+                            <?= afficherJoueursDynamiques($joueurs_equipe2, ["Ailier gauche", "Ailier droit", "Attaquant"]) ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+
+
+
 
 
 

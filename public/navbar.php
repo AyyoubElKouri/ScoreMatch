@@ -7,6 +7,24 @@ if (session_status() == PHP_SESSION_NONE) {
 
 $isLoggedIn = isset($_SESSION['user_id']);
 $userRole = isset($_SESSION['role']) ? $_SESSION['role'] : 'guest'; 
+
+$user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
+$notifications = [];
+$notif_count = 0;
+
+if ($user_id) {
+    try {
+        // Récupérer les notifications non lues
+        $stmt = $pdo->prepare("SELECT * FROM notifications WHERE user_id = ? AND vue = 0 ORDER BY date_notification DESC LIMIT 5");
+        $stmt->execute([$user_id]);
+        $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Nombre total de notifications non lues
+        $notif_count = count($notifications);
+    } catch (PDOException $e) {
+        $notifications = [];
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -150,9 +168,33 @@ body.dark-mode {
                 <!-- <li class="nav-item"><a class="nav-link" href="teams.php">Équipes</a></li>
                 <li class="nav-item"><a class="nav-link" href="players.php">Joueurs</a></li> -->
                 <li class="nav-item"><a class="nav-link" href="recherche.php">recherche</a></li>
-                <li class="nav-item"><a class="nav-link" href="tournaments.php">Tournois</a></li>
+                <!-- <li class="nav-item"><a class="nav-link" href="tournaments.php">Tournois</a></li> -->
                 <li class="nav-item"><a class="nav-link" href="classement.php">Classement</a></li>
                 <li class="nav-item"><a class="nav-link" href="resultats.php">Résultats</a></li>
+                <li class="nav-item">
+    <a class="nav-link position-relative" href="notifications.php">
+        🔔
+        <?php
+        $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
+        $count = 0;
+
+        if ($user_id) {
+            try {
+                $stmt = $pdo->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = ? AND vue = 0");
+                $stmt->execute([$user_id]);
+                $count = $stmt->fetchColumn();
+            } catch (PDOException $e) {
+                $count = 0; // Évite l'erreur si la requête échoue
+            }
+        }
+        ?>
+        <?php if ($count > 0): ?>
+            <span class="badge bg-danger position-absolute top-0 start-100 translate-middle"><?= $count ?></span>
+        <?php endif; ?>
+    </a>
+</li>
+
+
 
                 <?php if ($isLoggedIn): ?>
                     <?php if ($userRole === 'user'): ?>
