@@ -196,7 +196,7 @@ body {
 
 <!-- Contenu principal -->
 <div class="content">
-    <h2 class="text-center mb-4">Tableau de Bord - Admin Tournoi</h2>
+    <h2 class="text-center mb-4">Tableau de Bord - botola</h2>
 
     <!-- Statistiques -->
     <div class="row">

@@ -14,11 +14,23 @@ $query = "SELECT m.*,
                e1.id AS equipe1_id, e2.id AS equipe2_id,
                e1.nom AS equipe1, e2.nom AS equipe2, 
                e1.logo AS logo1, e2.logo AS logo2,
-               m.score_equipe1, m.score_equipe2
+               m.score_equipe1, m.score_equipe2,
+               m.possession_equipe1, m.possession_equipe2,
+               m.tirs_equipe1, m.tirs_equipe2,
+               m.tirs_cadres_equipe1, m.tirs_cadres_equipe2,
+               m.corners_equipe1, m.corners_equipe2,
+               m.fautes_equipe1, m.fautes_equipe2,
+               m.passes_equipe1, m.passes_equipe2,
+               m.interventions_gardien_equipe1, m.interventions_gardien_equipe2,
+               m.cartons_jaunes_equipe1, m.cartons_jaunes_equipe2,
+               m.cartons_rouges_equipe1, m.cartons_rouges_equipe2,
+               m.touches_equipe1, m.touches_equipe2,
+               m.tirs_bloques_equipe1, m.tirs_bloques_equipe2
         FROM matches m
         JOIN equipes e1 ON m.equipe1_id = e1.id
         JOIN equipes e2 ON m.equipe2_id = e2.id
         WHERE m.id = ?";
+
 
 $stmt = $pdo->prepare($query);
 $stmt->execute([$match_id]);
@@ -158,6 +170,97 @@ $evenements = $stmt_events->fetchAll(PDO::FETCH_ASSOC);
         </ul>
     </div>
 </div>
+
+
+
+<h3 class="mt-4">📊 Statistiques du Match</h3>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Statistique</th>
+                <th><?= htmlspecialchars($match['equipe1']) ?></th>
+                <th><?= htmlspecialchars($match['equipe2']) ?></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Possession de balle (%)</td>
+                <td><?= $match['possession_equipe1'] ?>%</td>
+                <td><?= $match['possession_equipe2'] ?>%</td>
+            </tr>
+            <tr>
+                <td>Tirs</td>
+                <td><?= $match['tirs_equipe1'] ?></td>
+                <td><?= $match['tirs_equipe2'] ?></td>
+            </tr>
+            <tr>
+                <td>Tirs cadrés</td>
+                <td><?= $match['tirs_cadres_equipe1'] ?></td>
+                <td><?= $match['tirs_cadres_equipe2'] ?></td>
+            </tr>
+            <tr>
+                <td>Corners</td>
+                <td><?= $match['corners_equipe1'] ?></td>
+                <td><?= $match['corners_equipe2'] ?></td>
+            </tr>
+            <tr>
+                <td>Fautes</td>
+                <td><?= $match['fautes_equipe1'] ?></td>
+                <td><?= $match['fautes_equipe2'] ?></td>
+            </tr>
+            <tr>
+                <td>Passes complétées</td>
+                <td><?= $match['passes_equipe1'] ?></td>
+                <td><?= $match['passes_equipe2'] ?></td>
+            </tr>
+            <tr>
+                <td>Interventions du gardien</td>
+                <td><?= $match['interventions_gardien_equipe1'] ?></td>
+                <td><?= $match['interventions_gardien_equipe2'] ?></td>
+            </tr>
+            <tr>
+                <td>Cartons jaunes</td>
+                <td><?= $match['cartons_jaunes_equipe1'] ?></td>
+                <td><?= $match['cartons_jaunes_equipe2'] ?></td>
+            </tr>
+            <tr>
+                <td>Cartons rouges</td>
+                <td><?= $match['cartons_rouges_equipe1'] ?></td>
+                <td><?= $match['cartons_rouges_equipe2'] ?></td>
+            </tr>
+            <tr>
+                <td>Touches</td>
+                <td><?= $match['touches_equipe1'] ?></td>
+                <td><?= $match['touches_equipe2'] ?></td>
+            </tr>
+            <tr>
+                <td>Tirs bloqués</td>
+                <td><?= $match['tirs_bloques_equipe1'] ?></td>
+                <td><?= $match['tirs_bloques_equipe2'] ?></td>
+            </tr>
+        <tr>
+            <th>Pénaltys concédés</th>
+            <td><?= $match['penaltys_concedes_equipe1'] ?></td>
+            <td><?= $match['penaltys_concedes_equipe2'] ?></td>
+        </tr>
+            
+        <tr>
+            <th>Pénaltys réussis</th>
+            <td><?= $match['penaltys_reussis_equipe1'] ?></td>
+            <td><?= $match['penaltys_reussis_equipe2'] ?></td>
+        </tr>
+        <tr>
+            <th>Hors-jeu</th>
+            <td><?= $match['hors_jeu_equipe1'] ?></td>
+            <td><?= $match['hors_jeu_equipe2'] ?></td>
+        </tr>
+
+
+        </tbody>
+    </table>
+</div>
+
 
 
 

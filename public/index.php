@@ -7,19 +7,42 @@ $userRole = isset($_SESSION['role']) ? $_SESSION['role'] : 'guest'; // 'guest' p
 
 require_once '../config/database.php';
 
-// Récupérer les matchs du jour
+// 📅 Récupérer la date du jour
 $today = date('Y-m-d');
-$query = "SELECT m.date_match, m.heure, m.id, e1.logo AS logo1, e2.logo AS logo2 
-          FROM matches m
-          JOIN equipes e1 ON m.equipe1_id = e1.id
-          JOIN equipes e2 ON m.equipe2_id = e2.id
-          WHERE DATE(m.date_match) = ? 
-          AND (m.score_equipe1 IS NULL OR m.score_equipe2 IS NULL)";
+
+$queryBotola = "SELECT m.date_match, m.heure, m.id, 
+e1.nom AS equipe1, e2.nom AS equipe2, 
+e1.logo AS logo1, e2.logo AS logo2, 
+m.score_equipe1, m.score_equipe2
+FROM matches m
+JOIN equipes e1 ON m.equipe1_id = e1.id
+JOIN equipes e2 ON m.equipe2_id = e2.id
+WHERE DATE(m.date_match) = ? 
+AND m.tournoi_id = 1";
+
+$stmtBotola = $pdo->prepare($queryBotola);
+$stmtBotola->execute([$today]);
+$matchs_botola = $stmtBotola->fetchAll(PDO::FETCH_ASSOC);
+
+// 🔹 Vérifier si les matchs sont bien récupérés
 
 
-$stmt = $pdo->prepare($query);
-$stmt->execute([$today]);
-$matchs_du_jour = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+
+
+// ✅ Récupérer les matchs du jour pour Kass L3arch (tournoi_id = 2)
+$queryKassL3arch = "SELECT m.date_match, m.heure, m.id, e1.logo AS logo1, e2.logo AS logo2 
+                    FROM matches m
+                    JOIN equipes e1 ON m.equipe1_id = e1.id
+                    JOIN equipes e2 ON m.equipe2_id = e2.id
+                    WHERE DATE(m.date_match) = ? 
+                    AND m.tournoi_id = 2 
+                    AND (m.score_equipe1 IS NULL OR m.score_equipe2 IS NULL)";
+
+$stmtKassL3arch = $pdo->prepare($queryKassL3arch);
+$stmtKassL3arch->execute([$today]);
+$matchs_kass_l3arch = $stmtKassL3arch->fetchAll(PDO::FETCH_ASSOC);
+
 ?>
 
 <!DOCTYPE html>
@@ -52,51 +75,69 @@ $matchs_du_jour = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 
 
-<!-- Section des Matchs du Jour -->
+<!-- ✅ Section des Matchs du Jour -->
 <section class="py-5">
     <div class="container">
-        <h2 class="mb-4 text-center">Matchs du Jour</h2>
+        <h2 class="mb-4 text-center">⚽ Matchs du Jour</h2>
+
+        <!-- ✅ Section des matchs de Botola -->
+        <h3 class="mb-3 text-primary">🏆 Botola Pro</h3>
         <div class="match-list">
-            <?php foreach ($matchs_du_jour as $match): ?>
-                <div class="match-item">
-                    <!-- Date et Heure -->
-        
-                    <div class="match-info">
-        
-        <?php
-        
-        // Formater la date
-        $date_formatee = date('d/m/Y', strtotime($match['date_match']));
-        // Vérifier si l'heure est renseignée et différente de "00:00:00"
-        
-        $heure_formatee = (!empty($match['heure']) && $match['heure'] !== "00:00:00") 
-        
-        ? date('H:i', strtotime($match['heure'])): '';
-
-            // Affichage final : Si l'heure est vide, on affiche juste la date
-
-        $affichage_date_heure = $date_formatee . (!empty($heure_formatee) ? " " . $heure_formatee : '');
-        
-        ?>
-        
-
-       <span class="match-date"><?= $affichage_date_heure ?></span>
-
-                    </div>
-                    <!-- Logos des équipes -->
-                    <div class="match-content">
-                        <div class="team">
-                            <img src="<?= htmlspecialchars($match['logo1']) ?>" alt="Équipe 1">
+            <?php if (count($matchs_botola) > 0) : ?>
+                <?php foreach ($matchs_botola as $match) : ?>
+                    <div class="match-item">
+                        <div class="match-info">
+                            <?php
+                            $date_formatee = date('d/m/Y', strtotime($match['date_match']));
+                            $heure_formatee = (!empty($match['heure']) && $match['heure'] !== "00:00:00") ? date('H:i', strtotime($match['heure'])) : '';
+                            ?>
+                            <span class="match-date"><?= $date_formatee . (!empty($heure_formatee) ? " " . $heure_formatee : '') ?></span>
                         </div>
-                        <div class="match-score">VS</div>
-                        <div class="team">
-                            <img src="<?= htmlspecialchars($match['logo2']) ?>" alt="Équipe 2">
+                        <div class="match-content">
+                            <div class="team">
+                                <img src="<?= htmlspecialchars($match['logo1']) ?>" alt="Équipe 1">
+                            </div>
+                            <div class="match-score">VS</div>
+                            <div class="team">
+                                <img src="<?= htmlspecialchars($match['logo2']) ?>" alt="Équipe 2">
+                            </div>
                         </div>
+                        <a href="match_details.php?id=<?= $match['id'] ?>" class="match-details-btn">Détails</a>
                     </div>
-                    <!-- Bouton Détails -->
-                    <a href="match_details.php?id=<?= $match['id'] ?>" class="match-details-btn">Détails</a>
-                </div>
-            <?php endforeach; ?>
+                <?php endforeach; ?>
+            <?php else : ?>
+                <p class="text-muted text-center">Aucun match aujourd'hui.</p>
+            <?php endif; ?>
+        </div>
+
+        <!-- ✅ Section des matchs de Kass L3arch -->
+        <h3 class="mt-5 mb-3 text-success">🏆 Kass L3arch</h3>
+        <div class="match-list">
+            <?php if (count($matchs_kass_l3arch) > 0) : ?>
+                <?php foreach ($matchs_kass_l3arch as $match) : ?>
+                    <div class="match-item">
+                        <div class="match-info">
+                            <?php
+                            $date_formatee = date('d/m/Y', strtotime($match['date_match']));
+                            $heure_formatee = (!empty($match['heure']) && $match['heure'] !== "00:00:00") ? date('H:i', strtotime($match['heure'])) : '';
+                            ?>
+                            <span class="match-date"><?= $date_formatee . (!empty($heure_formatee) ? " " . $heure_formatee : '') ?></span>
+                        </div>
+                        <div class="match-content">
+                            <div class="team">
+                                <img src="<?= htmlspecialchars($match['logo1']) ?>" alt="Équipe 1">
+                            </div>
+                            <div class="match-score">VS</div>
+                            <div class="team">
+                                <img src="<?= htmlspecialchars($match['logo2']) ?>" alt="Équipe 2">
+                            </div>
+                        </div>
+                        <a href="match_details.php?id=<?= $match['id'] ?>" class="match-details-btn">Détails</a>
+                    </div>
+                <?php endforeach; ?>
+            <?php else : ?>
+                <p class="text-muted text-center">Aucun match aujourd'hui.</p>
+            <?php endif; ?>
         </div>
     </div>
 </section>

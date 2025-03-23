@@ -25,27 +25,69 @@ function getJoueursParEquipe($pdo, $equipe_id) {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-// Ajouter un score
+
+
+// Ajouter un score et les statistiques du match
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ajouter_score'])) {
     $match_id = $_POST['match_id'];
     $score_equipe1 = $_POST['score_equipe1'];
     $score_equipe2 = $_POST['score_equipe2'];
 
-    $stmt = $pdo->prepare("UPDATE matches SET score_equipe1 = ?, score_equipe2 = ? WHERE id = ?");
-    $stmt->execute([$score_equipe1, $score_equipe2, $match_id]);
+    // Préparer la requête de mise à jour
+    $stmt = $pdo->prepare("UPDATE matches SET 
+        score_equipe1 = ?, score_equipe2 = ?,
+        possession_equipe1 = ?, possession_equipe2 = ?, 
+        tirs_equipe1 = ?, tirs_equipe2 = ?, 
+        tirs_cadres_equipe1 = ?, tirs_cadres_equipe2 = ?, 
+        corners_equipe1 = ?, corners_equipe2 = ?, 
+        fautes_equipe1 = ?, fautes_equipe2 = ?, 
+        passes_equipe1 = ?, passes_equipe2 = ?, 
+        interventions_gardien_equipe1 = ?, interventions_gardien_equipe2 = ?, 
+        cartons_jaunes_equipe1 = ?, cartons_jaunes_equipe2 = ?, 
+        cartons_rouges_equipe1 = ?, cartons_rouges_equipe2 = ?, 
+        touches_equipe1 = ?, touches_equipe2 = ?, 
+        tirs_bloques_equipe1 = ?, tirs_bloques_equipe2 = ?, 
+        penaltys_concedes_equipe1 = ?, penaltys_concedes_equipe2 = ?, 
+        penaltys_reussis_equipe1 = ?, penaltys_reussis_equipe2 = ?, 
+        hors_jeu_equipe1 = ?, hors_jeu_equipe2 = ? 
+        WHERE id = ?");
 
+    // Exécuter la requête avec les valeurs du formulaire
+    $stmt->execute([
+        $score_equipe1, $score_equipe2, 
+        $_POST['possession_equipe1'], $_POST['possession_equipe2'],
+        $_POST['tirs_equipe1'], $_POST['tirs_equipe2'],
+        $_POST['tirs_cadres_equipe1'], $_POST['tirs_cadres_equipe2'],
+        $_POST['corners_equipe1'], $_POST['corners_equipe2'],
+        $_POST['fautes_equipe1'], $_POST['fautes_equipe2'],
+        $_POST['passes_equipe1'], $_POST['passes_equipe2'],
+        $_POST['interventions_gardien_equipe1'], $_POST['interventions_gardien_equipe2'],
+        $_POST['cartons_jaunes_equipe1'], $_POST['cartons_jaunes_equipe2'],
+        $_POST['cartons_rouges_equipe1'], $_POST['cartons_rouges_equipe2'],
+        $_POST['touches_equipe1'], $_POST['touches_equipe2'],
+        $_POST['tirs_bloques_equipe1'], $_POST['tirs_bloques_equipe2'],
+        $_POST['penaltys_concedes_equipe1'], $_POST['penaltys_concedes_equipe2'],
+        $_POST['penaltys_reussis_equipe1'], $_POST['penaltys_reussis_equipe2'],
+        $_POST['hors_jeu_equipe1'], $_POST['hors_jeu_equipe2'],
+        $match_id
+    ]);
+
+    // Redirection après l'enregistrement
     echo "<script>setTimeout(() => { window.location.href = 'admin_resultat.php'; }, 500);</script>";
     exit();
 }
 
+
+
 // Ajouter un événement (but ou carton)
+
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ajouter_evenement'])) {
     $match_id = $_POST['match_id'];
     $joueur_id = $_POST['joueur_id'] ?? NULL;
     $minute = $_POST['minute'] ?? NULL;
     $type_event = $_POST['type_event'] ?? NULL;
     $carton = $_POST['carton'] ?? NULL;
-    $minute_carton = $_POST['minute_carton'] ?? NULL;
+    $minute_carton = !empty($_POST['minute_carton']) ? $_POST['minute_carton'] : NULL;
 
     // Vérifier que le joueur est bien sélectionné
     if (!$joueur_id) {
@@ -59,14 +101,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ajouter_evenement'])) 
     $equipe_id = $stmt->fetchColumn() ?: NULL;
 
     if ($joueur_id && $minute && $equipe_id && $type_event) {
+        // Si aucun carton n'est sélectionné, ne pas insérer de minute_carton
+        if ($carton == "Aucun") {
+            $carton = NULL;
+            $minute_carton = NULL;
+        }
+
         $stmt = $pdo->prepare("INSERT INTO match_events (match_id, joueur_id, equipe_id, type_event, minute_but, carton, minute_carton) 
                                VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$match_id, $joueur_id, $equipe_id, $type_event, $minute, $carton, $minute_carton]);
 
-        echo "<script>setTimeout(() => { window.location.href = 'admin_resultat.php'; }, 500);</script>";
+        if ($stmt->execute([$match_id, $joueur_id, $equipe_id, $type_event, $minute, $carton, $minute_carton])) {
+            echo "<script>alert('Événement ajouté avec succès !'); window.location.href = 'admin_resultat.php';</script>";
+        } else {
+            echo "<script>alert('Erreur SQL : " . json_encode($stmt->errorInfo()) . "');</script>";
+        }
+
+        exit();
+    } else {
+        echo "<script>alert('Données manquantes !');</script>";
         exit();
     }
 }
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -118,6 +176,95 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ajouter_evenement'])) 
                     <div class="col">
                         <input type="number" class="form-control" name="score_equipe2" placeholder="Score <?= $match['equipe2'] ?>" required>
                     </div>
+
+                <!-- Possession de balle -->
+<label>Possession de balle (%)</label>
+<input type="number" class="form-control" name="possession_equipe1" placeholder="Possession de <?= htmlspecialchars($match['equipe1']) ?>">
+<input type="number" class="form-control" name="possession_equipe2" placeholder="Possession de <?= htmlspecialchars($match['equipe2']) ?>">
+
+<!-- Tirs et tirs cadrés -->
+<label>Tirs</label>
+<input type="number" class="form-control" name="tirs_equipe1" placeholder="Tirs de <?= htmlspecialchars($match['equipe1']) ?>">
+<input type="number" class="form-control" name="tirs_equipe2" placeholder="Tirs de <?= htmlspecialchars($match['equipe2']) ?>">
+
+<label>Tirs cadrés</label>
+<input type="number" class="form-control" name="tirs_cadres_equipe1" placeholder="Tirs cadrés de <?= htmlspecialchars($match['equipe1']) ?>">
+<input type="number" class="form-control" name="tirs_cadres_equipe2" placeholder="Tirs cadrés de <?= htmlspecialchars($match['equipe2']) ?>">
+
+<!-- Corners -->
+<label>Corners</label>
+<input type="number" class="form-control" name="corners_equipe1" placeholder="Corners de <?= htmlspecialchars($match['equipe1']) ?>">
+<input type="number" class="form-control" name="corners_equipe2" placeholder="Corners de <?= htmlspecialchars($match['equipe2']) ?>">
+
+<!-- Interventions gardien -->
+<label>Interventions du gardien</label>
+<input type="number" class="form-control" name="interventions_gardien_equipe1" placeholder="Sauvegardes de <?= htmlspecialchars($match['equipe1']) ?>">
+<input type="number" class="form-control" name="interventions_gardien_equipe2" placeholder="Sauvegardes de <?= htmlspecialchars($match['equipe2']) ?>">
+
+<!-- Fautes -->
+<label>Fautes</label>
+<input type="number" class="form-control" name="fautes_equipe1" placeholder="Fautes de <?= htmlspecialchars($match['equipe1']) ?>">
+<input type="number" class="form-control" name="fautes_equipe2" placeholder="Fautes de <?= htmlspecialchars($match['equipe2']) ?>">
+
+<!-- Cartons jaunes et rouges -->
+<label>Cartons jaunes</label>
+<input type="number" class="form-control" name="cartons_jaunes_equipe1" placeholder="Cartons jaunes de <?= htmlspecialchars($match['equipe1']) ?>">
+<input type="number" class="form-control" name="cartons_jaunes_equipe2" placeholder="Cartons jaunes de <?= htmlspecialchars($match['equipe2']) ?>">
+
+<label>Cartons rouges</label>
+<input type="number" class="form-control" name="cartons_rouges_equipe1" placeholder="Cartons rouges de <?= htmlspecialchars($match['equipe1']) ?>">
+<input type="number" class="form-control" name="cartons_rouges_equipe2" placeholder="Cartons rouges de <?= htmlspecialchars($match['equipe2']) ?>">
+
+<!-- Passes complet -->
+<label>Passes complétées</label>
+<input type="number" class="form-control" name="passes_equipe1" placeholder="Passes de <?= htmlspecialchars($match['equipe1']) ?>">
+<input type="number" class="form-control" name="passes_equipe2" placeholder="Passes de <?= htmlspecialchars($match['equipe2']) ?>">
+<!-- Tirs bloqués -->
+<label>Tirs bloqués</label>
+<div>
+
+
+<input type="number" class="form-control" name="tirs_bloques_equipe1" placeholder="Tirs bloqués de <?= htmlspecialchars($match['equipe1']) ?>">
+<input type="number" class="form-control" name="tirs_bloques_equipe2" placeholder="Tirs bloqués de <?= htmlspecialchars($match['equipe2']) ?>">
+
+<!-- Pénaltys -->
+<label>Pénaltys concédés</label>
+<div class="row">
+    <div class="col">
+        <input type="number" name="penaltys_concedes_equipe1" class="form-control" placeholder="Équipe 1" required>
+    </div>
+    <div class="col">
+        <input type="number" name="penaltys_concedes_equipe2" class="form-control" placeholder="Équipe 2" required>
+    </div>
+
+
+
+<label>Pénaltys réussis</label>
+<div class="row">
+    <div class="col">
+        <input type="number" name="penaltys_reussis_equipe1" class="form-control" placeholder="Équipe 1" required>
+    </div>
+    <div class="col">
+        <input type="number" name="penaltys_reussis_equipe2" class="form-control" placeholder="Équipe 2" required>
+    </div>
+</div>
+
+<label>Hors-jeu</label>
+<div class="row">
+    <div class="col">
+        <input type="number" name="hors_jeu_equipe1" class="form-control" placeholder="Équipe 1" required>
+    </div>
+    <div class="col">
+        <input type="number" name="hors_jeu_equipe2" class="form-control" placeholder="Équipe 2" required>
+    </div>
+</div>
+
+
+<!-- Touches -->
+<label>Touches</label>
+<input type="number" class="form-control" name="touches_equipe1" placeholder="Touches de <?= htmlspecialchars($match['equipe1']) ?>">
+<input type="number" class="form-control" name="touches_equipe2" placeholder="Touches de <?= htmlspecialchars($match['equipe2']) ?>">
+
                     <div class="col">
                         <button type="submit" name="ajouter_score" class="btn btn-success">✔ Ajouter Score</button>
                     </div>
@@ -237,9 +384,6 @@ $(document).ready(function() {
 });
 
 </script>
-
-
-
 
 </body>
 </html>

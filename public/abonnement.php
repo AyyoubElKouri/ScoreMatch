@@ -36,7 +36,7 @@ if ($stmt->rowCount() == 0) {
         $date_match = date('d/m/Y H:i', strtotime($match['date_match']));
 
         // Ajouter une notification avec les détails du match
-        $message = "📢 Vous êtes abonné au match **$equipe1 vs $equipe2** prévu le **$date_match**.";
+        $message = "Vous êtes abonné au match **$equipe1 vs $equipe2** prévu le **$date_match**.";
         $stmt = $pdo->prepare("INSERT INTO notifications (user_id, match_id, message, vue, date_notification) VALUES (?, ?, ?, 0, NOW())");
         $stmt->execute([$user_id, $match_id, $message]);
     }

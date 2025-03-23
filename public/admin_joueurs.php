@@ -31,7 +31,7 @@ if (isset($_GET['edit'])) {
     }
 }
 
-// **Ajouter ou modifier un joueur**
+
 // **Ajouter ou modifier un joueur**
 if ($_SERVER["REQUEST_METHOD"] == "POST" && (isset($_POST['update']) || isset($_POST['add']))) {
   $nom = isset($_POST['nom']) ? trim($_POST['nom']) : "";

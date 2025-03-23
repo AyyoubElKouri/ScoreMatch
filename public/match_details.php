@@ -334,7 +334,7 @@ function getSchemaTactique($joueurs) {
 <!-- Liste des joueurs de chaque équipe -->
 <section class="py-5">
     <div class="container">
-        <h3 class="text-center mb-4">👥 Joueurs des Équipes</h3>
+        <h3 class="text-center mb-4"> Joueurs des Équipes</h3>
 
         <div class="row">
             <!-- Joueurs de l'équipe 1 -->
@@ -418,7 +418,7 @@ $schema_equipe2 = getSchemaTactique($joueurs_equipe2);
 <!-- 📌 Affichage des terrains pour les deux équipes -->
 <section class="py-5">
     <div class="container">
-        <h3 class="text-center mb-4">🏟 Disposition des Joueurs sur le Terrain</h3>
+        <h3 class="text-center mb-4">Disposition des Joueurs sur le Terrain</h3>
         <div class="row">
             <!-- Terrain Équipe 1 -->
             <div class="col-md-6">
@@ -464,11 +464,6 @@ $schema_equipe2 = getSchemaTactique($joueurs_equipe2);
         </div>
     </div>
 </section>
-
-
-
-
-
 
 
 

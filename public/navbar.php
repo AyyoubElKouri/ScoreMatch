@@ -168,7 +168,7 @@ body.dark-mode {
                 <!-- <li class="nav-item"><a class="nav-link" href="teams.php">Équipes</a></li>
                 <li class="nav-item"><a class="nav-link" href="players.php">Joueurs</a></li> -->
                 <li class="nav-item"><a class="nav-link" href="recherche.php">recherche</a></li>
-                <!-- <li class="nav-item"><a class="nav-link" href="tournaments.php">Tournois</a></li> -->
+                <li class="nav-item"><a class="nav-link" href="tournaments.php">Tournois</a></li>
                 <li class="nav-item"><a class="nav-link" href="classement.php">Classement</a></li>
                 <li class="nav-item"><a class="nav-link" href="resultats.php">Résultats</a></li>
                 <li class="nav-item">
