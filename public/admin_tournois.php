@@ -74,8 +74,42 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
 <div class="container mt-5">
     <h2 class="text-center">🏆 Gestion des Tournois</h2>
 
+    <!-- Modal Ajouter Tournoi -->
+<div class="modal fade" id="addTournoiModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="addTournoiForm">
+                <div class="modal-body">
+                    <input type="hidden" name="action" value="ajouter">
+                    
+                    <label>Nom</label>
+                    <input type="text" name="nom" id="addTournoiNom" class="form-control" required>
+
+                    <label>Date Début</label>
+                    <input type="date" name="date_debut" id="addTournoiDebut" class="form-control" required>
+
+                    <label>Date Fin</label>
+                    <input type="date" name="date_fin" id="addTournoiFin" class="form-control" required>
+
+                    <label>Admin Tournoi</label>
+                    <select name="admin_tournoi_id" id="addTournoiAdmin" class="form-control" required>
+                        <?php foreach ($admins_tournoi as $admin) : ?>
+                            <option value="<?= $admin['id'] ?>"><?= htmlspecialchars($admin['nom']) ?> (<?= htmlspecialchars($admin['email']) ?>)</option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Ajouter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
     <!-- Bouton Ajouter -->
-    <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#addTournoiModal">+ Ajouter un Tournoi</button>
+     <!-- Bouton Ajouter -->
+<button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#addTournoiModal">+ Ajouter un Tournoi</button>
 
     <!-- Tableau des tournois -->
     <table class="table table-striped">
@@ -186,7 +220,19 @@ $(document).ready(function(){
             });
         }
     });
+
+    // Ajouter un tournoi via AJAX
+    $("#addTournoiForm").submit(function(e){
+        e.preventDefault();
+        $.post("admin_tournois.php", $(this).serialize(), function(response){
+            if(response == "success"){
+                alert("Tournoi ajouté !");
+                location.reload(); // Rafraîchir la page après l'ajout
+            }
+        });
+    });
 });
+
 </script>
 
 </body>

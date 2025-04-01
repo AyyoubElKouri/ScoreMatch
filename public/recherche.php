@@ -59,44 +59,87 @@ try {
         <div class="row">
             <!-- Liste des joueurs -->
             <div class="col-md-6">
-                <h4 class="text-center">Joueurs</h4>
-                <ul class="list-group">
-                    <?php
-                    if (!empty($joueurs)) {
-                        foreach ($joueurs as $joueur) {
-                            echo '<li class="list-group-item">';
-                            echo '<a href="joueur_details.php?id=' . $joueur["id"] . '" class="text-decoration-none">' . htmlspecialchars($joueur["nom"]) . ' ' . htmlspecialchars($joueur["prenom"]) . '</a>';
-                            echo '</li>';
-                        }
-                    } else {
-                        echo '<li class="list-group-item text-center">Aucun joueur trouvé.</li>';
-                    }
-                    ?>
-                </ul>
-            </div>
+    <h4 class="text-center">Joueurs</h4>
+    <ul class="list-group">
+        <?php
+        if (!empty($joueurs)) {
+            foreach ($joueurs as $joueur) {
+                echo '<li class="list-group-item d-flex justify-content-between align-items-center">';
+                echo '<a href="joueur_details.php?id=' . $joueur["id"] . '" class="text-decoration-none">' . htmlspecialchars($joueur["nom"]) . ' ' . htmlspecialchars($joueur["prenom"]) . '</a>';
+                echo '<button class="btn btn-primary btn-sm follow-btn" data-id="' . $joueur["id"] . '" data-type="joueur">Suivre</button>';
+                echo '</li>';
+            }
+        } else {
+            echo '<li class="list-group-item text-center">Aucun joueur trouvé.</li>';
+        }
+        ?>
+    </ul>
+</div>
+
 
             <!-- Liste des équipes -->
             <div class="col-md-6">
-                <h4 class="text-center">Équipes</h4>
-                <ul class="list-group">
-                    <?php
-                    if (!empty($equipes)) {
-                        foreach ($equipes as $equipe) {
-                            echo '<li class="list-group-item">';
-                            echo '<a href="team_details.php?id=' . $equipe["id"] . '" class="text-decoration-none">' . htmlspecialchars($equipe["nom"]) . '</a>';
-                            echo '</li>';
-                        }
-                    } else {
-                        echo '<li class="list-group-item text-center">Aucune équipe trouvée.</li>';
-                    }
-                    ?>
-                </ul>
-            </div>
+    <h4 class="text-center">Équipes</h4>
+    <ul class="list-group">
+        <?php
+        if (!empty($equipes)) {
+            foreach ($equipes as $equipe) {
+                echo '<li class="list-group-item d-flex justify-content-between align-items-center">';
+                echo '<a href="team_details.php?id=' . $equipe["id"] . '" class="text-decoration-none">' . htmlspecialchars($equipe["nom"]) . '</a>';
+                echo '<button class="btn btn-secondary btn-sm follow-btn" data-id="' . $equipe["id"] . '" data-type="equipe">Suivre</button>';
+                echo '</li>';
+            }
+        } else {
+            echo '<li class="list-group-item text-center">Aucune équipe trouvée.</li>';
+        }
+        ?>
+    </ul>
+</div>
+
         </div>
     </div>
 </section>
 
+
+
 <script src="../bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+
+$(document).ready(function() {
+    $(".follow-btn").click(function() {
+        var user_id = <?php echo $_SESSION['user_id']; ?>; // ID de l'utilisateur connecté
+        var type = $(this).data('type'); // "joueur" ou "equipe"
+        var id = $(this).data('id'); // ID du joueur ou de l'équipe
+
+        $.ajax({
+            type: "POST",
+            url: "ajouter_abonnement.php", // Le fichier qui gère l'abonnement
+            data: { 
+                user_id: user_id, 
+                type: type, 
+                id: id 
+            },
+            dataType: "json", // Attendez une réponse JSON
+            success: function(response) {
+                if (response.status === 'success') {
+                    alert(response.message); // Afficher un message de confirmation
+                } else {
+                    alert(response.message); // Afficher un message d'erreur si besoin
+                }
+            },
+            error: function() {
+                alert("Erreur lors de l'abonnement.");
+            }
+        });
+    });
+});
+
+
+</script>
+</body>
+</html>
+
 
 </body>
 </html>

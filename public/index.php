@@ -7,7 +7,7 @@ $userRole = isset($_SESSION['role']) ? $_SESSION['role'] : 'guest'; // 'guest' p
 
 require_once '../config/database.php';
 
-// 📅 Récupérer la date du jour
+// Récupérer la date du jour
 $today = date('Y-m-d');
 
 $queryBotola = "SELECT m.date_match, m.heure, m.id, 
@@ -24,13 +24,13 @@ $stmtBotola = $pdo->prepare($queryBotola);
 $stmtBotola->execute([$today]);
 $matchs_botola = $stmtBotola->fetchAll(PDO::FETCH_ASSOC);
 
-// 🔹 Vérifier si les matchs sont bien récupérés
+// Vérifier si les matchs sont bien récupérés
 
 
 
 
 
-// ✅ Récupérer les matchs du jour pour Kass L3arch (tournoi_id = 2)
+//  Récupérer les matchs du jour pour Kass L3arch (tournoi_id = 2)
 $queryKassL3arch = "SELECT m.date_match, m.heure, m.id, e1.logo AS logo1, e2.logo AS logo2 
                     FROM matches m
                     JOIN equipes e1 ON m.equipe1_id = e1.id
@@ -67,7 +67,7 @@ $matchs_kass_l3arch = $stmtKassL3arch->fetchAll(PDO::FETCH_ASSOC);
 <section class="hero-section">
     <div class="hero-overlay"></div>
     <div class="hero-content">
-        <h1>Bienvenue sur Scores Matches ⚽</h1>
+        <h1>Bienvenue sur Scores Matches </h1>
         <p>Suivez les scores et résultats en temps réel !</p>
         <a href="calendrier.php" class="hero-button">Voir le Calendrier</a>
     </div>
@@ -75,12 +75,12 @@ $matchs_kass_l3arch = $stmtKassL3arch->fetchAll(PDO::FETCH_ASSOC);
 
 
 
-<!-- ✅ Section des Matchs du Jour -->
+<!--  Section des Matchs du Jour -->
 <section class="py-5">
     <div class="container">
-        <h2 class="mb-4 text-center">⚽ Matchs du Jour</h2>
+        <h2 class="mb-4 text-center"> Matchs du Jour</h2>
 
-        <!-- ✅ Section des matchs de Botola -->
+        <!--  Section des matchs de Botola -->
         <h3 class="mb-3 text-primary">🏆 Botola Pro</h3>
         <div class="match-list">
             <?php if (count($matchs_botola) > 0) : ?>
@@ -110,7 +110,7 @@ $matchs_kass_l3arch = $stmtKassL3arch->fetchAll(PDO::FETCH_ASSOC);
             <?php endif; ?>
         </div>
 
-        <!-- ✅ Section des matchs de Kass L3arch -->
+        <!-- Section des matchs de Kass L3arch -->
         <h3 class="mt-5 mb-3 text-success">🏆 Kass L3arch</h3>
         <div class="match-list">
             <?php if (count($matchs_kass_l3arch) > 0) : ?>
@@ -151,11 +151,11 @@ $publications = $pdo->query($query)->fetchAll(PDO::FETCH_ASSOC);
 
 
 
-<!-- Section Publications -->
+
 <!-- Section Publications -->
 <section class="py-5 publications">
     <div class="container">
-        <h2 class="mb-4 text-center">Publications sur Botola Pro</h2>
+        <h2 class="mb-4 text-center">Publications</h2>
         <div class="row">
             <?php foreach ($publications as $publication) : ?>
                 <div class="col-md-12 mb-3">
@@ -176,7 +176,7 @@ $publications = $pdo->query($query)->fetchAll(PDO::FETCH_ASSOC);
 
 
 
-  <!-- Pied de page -->
+
 <!-- Pied de page -->
 <footer class="bg-dark text-white pt-5 pb-3">
     <div class="container">

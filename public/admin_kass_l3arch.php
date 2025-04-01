@@ -142,7 +142,7 @@ $nb_equipes = $nb_equipes->fetchColumn();
 <div class="sidebar">
     <div class="sidebar-header"><i class="fas fa-trophy"></i> Admin Kass L3arch</div>
     <a href="admin_kass_l3arch.php"><i class="fas fa-home"></i> Dashboard</a>
-    <a href="admin_publication_kass.php"><i class="fas fa-newspaper"></i> Gérer les Publications</a>
+    <a href="admin_publication_kassL3arch.php"><i class="fas fa-newspaper"></i> Gérer les Publications</a>
     <a href="admin_matchs_kass.php"><i class="fas fa-futbol"></i> Gérer les Matchs</a>
     <a href="admin_resultat_kass.php"><i class="fas fa-users"></i> Gérer scores</a>
     <hr class="text-white">

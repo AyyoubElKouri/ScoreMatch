@@ -142,6 +142,7 @@ $evenements = $stmt_events->fetchAll(PDO::FETCH_ASSOC);
                 if ($event['type_event'] === 'carton' && $event['equipe_id'] == $match['equipe1_id']) {
                     $hasCardsEquipe1 = true;
                     echo "<li class='list-group-item'>⏱️ [Minute " . $event['minute_carton'] . "] " . $event['joueur'] . " a reçu un carton " . ucfirst($event['carton']) . ".</li>";
+
                 }
             }
             if (!$hasCardsEquipe1) {

@@ -1,7 +1,7 @@
-
 <?php
 session_start();
 require_once '../config/database.php';
+
 
 // Ajouter la fonction de redirection
 function redirect($url) {
@@ -30,7 +30,6 @@ $matchs = $pdo->query("
     LEFT JOIN arbitres a ON m.arbitre_id = a.id
     ORDER BY m.date_match DESC
 ")->fetchAll(PDO::FETCH_ASSOC);
-
 
 
 // Récupération des arbitres pour l'affectation
@@ -405,6 +404,7 @@ function chargerJoueurs(equipe1, equipe2) {
     let joueursEquipe1Div = document.getElementById("joueursEquipe1");
     let joueursEquipe2Div = document.getElementById("joueursEquipe2");
     let joueursSelectionDiv = document.getElementById("joueursSelection");
+    
 
     if (equipe1 && equipe2) {
         joueursSelectionDiv.style.display = "block"; // Afficher la section joueurs
