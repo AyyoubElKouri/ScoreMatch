@@ -40,7 +40,8 @@ $matchs = $matchs->fetchAll(PDO::FETCH_ASSOC);
 $arbitres = $pdo->query("SELECT id, nom FROM arbitres ORDER BY nom")->fetchAll(PDO::FETCH_ASSOC);
 
 
-// Ajouter un match
+
+// Ajouter un match avec le tour elle fonctione bien
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ajouter_match'])) {
     $equipe1_id = $_POST['equipe1'];
     $equipe2_id = $_POST['equipe2'];
@@ -48,22 +49,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ajouter_match'])) {
     $heure_match = $_POST['heure'];
     $stade_id = $_POST['stade'];
     $arbitre_id = !empty($_POST['arbitre_id']) ? $_POST['arbitre_id'] : NULL;
-    $tournoi_id = 2; // Tournoi Kass L3arch
+    $tour = $_POST['tour'];  
+    $tournoi_id = 2; 
 
     if ($equipe1_id == $equipe2_id) {
         $error = "Une équipe ne peut pas jouer contre elle-même.";
     } elseif (empty($heure_match) || empty($stade_id)) {
         $error = "L'heure et le stade du match sont obligatoires.";
     } else {
-        $stmt = $pdo->prepare("INSERT INTO matches (equipe1_id, equipe2_id, date_match, heure, stade_id, arbitre_id, tournoi_id) 
-                               VALUES (?, ?, ?, ?, ?, ?, ?)");
-        if ($stmt->execute([$equipe1_id, $equipe2_id, $date_match, $heure_match, $stade_id, $arbitre_id, $tournoi_id])) {
+        $stmt = $pdo->prepare("INSERT INTO matches (equipe1_id, equipe2_id, date_match, heure, stade_id, arbitre_id, tournoi_id, tour) 
+                               VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        if ($stmt->execute([$equipe1_id, $equipe2_id, $date_match, $heure_match, $stade_id, $arbitre_id, $tournoi_id, $tour])) {
             redirect("admin_matchs_kass.php");
         } else {
             $error = "Erreur lors de l'ajout du match.";
         }
     }
 }
+
 
 
 // if ($stmt->execute([$equipe1_id, $equipe2_id, $date_match, $heure_match, $stade_id, $arbitre_id])) {
@@ -151,9 +154,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['modifier_match'])) {
 <head>
     <meta charset="UTF-8">
     <title>Gestion des Matchs</title>
-    <!-- Bootstrap CSS -->
+ 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-    <!-- Bootstrap JS -->
+ 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body class="bg-light">
@@ -165,13 +168,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['modifier_match'])) {
         <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
-    <!-- Bouton Ajouter -->
+  
     <div class="d-flex justify-content-between mb-3">
         <h4>Liste des Matchs</h4>
         <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addMatchModal">+ Ajouter un Match</button>
     </div>
 
-    <!-- Tableau des matchs -->
+    
     <table class="table table-striped table-hover">
         <thead class="table-dark">
             <tr>
@@ -319,7 +322,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['modifier_match'])) {
         <option value="<?= $arbitre['id'] ?>"><?= htmlspecialchars($arbitre['nom']) ?></option>
     <?php endforeach; ?>
 </select>
-                </div>
+
+  <!-- Sélectionner le tour -->
+                <label>Tour du Match</label>
+                    <select name="tour" class="form-control" required>
+                        <option value="">-- Sélectionner --</option>
+                        <option value="Quart de Finale">Quart de Finale</option>
+                        <option value="Demi-Finale">Demi-Finale</option>
+                        <option value="Finale">Finale</option>
+                    </select>
+    </div>
 
                 <div id="joueursSelection" style="display:none;">
     <h5 class="mt-3">Sélectionner les joueurs et leurs positions</h5>
@@ -352,7 +364,7 @@ function chargerInfosMatch() {
     chargerJoueurs(equipe1, equipe2);
 }
 
-// 🏟️ Charger les stades des équipes sélectionnées
+
 function chargerStades(equipe1, equipe2) {
     let stadeSelect = document.getElementById("stade");
 
@@ -371,7 +383,7 @@ function chargerStades(equipe1, equipe2) {
     }
 }
 
-// ⚽ Charger les joueurs des équipes sélectionnées
+// Charger les joueurs des équipes sélectionnées
 function chargerJoueurs(equipe1, equipe2) {
     let joueursEquipe1Div = document.getElementById("joueursEquipe1");
     let joueursEquipe2Div = document.getElementById("joueursEquipe2");

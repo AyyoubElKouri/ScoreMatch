@@ -2,6 +2,8 @@
 session_start();
 require_once '../config/database.php'; // Connexion à la base de données
 
+
+
 // Récupérer tous les tournois de la base de données, y compris les informations de l'admin
 $tournois = $pdo->query("
     SELECT t.*, u.nom AS admin_nom, u.email AS admin_email
@@ -9,6 +11,8 @@ $tournois = $pdo->query("
     LEFT JOIN users u ON t.admin_tournoi_id = u.id
     ORDER BY t.date_debut DESC
 ")->fetchAll(PDO::FETCH_ASSOC);
+
+
 ?>
 
 <!DOCTYPE html>
@@ -96,18 +100,26 @@ $tournois = $pdo->query("
 <div class="container">
     <h2 class="text-center mb-5 text-primary">🏆 Nos Tournois</h2>
 
+
+
     <div class="row">
         <?php foreach ($tournois as $tournoi) : ?>
             <div class="col-md-4 mb-4">
                 <div class="tournoi-card">
                     <h3><?= htmlspecialchars($tournoi['nom']) ?></h3>
                     <p class="date">Du <?= htmlspecialchars($tournoi['date_debut']) ?> au <?= htmlspecialchars($tournoi['date_fin']) ?></p>
-                    <!-- Ajouter le lien vers les matchs du tournoi -->
-                    <a href="kass_l3arch_matches.php?tournoi_id=<?= $tournoi['id'] ?>" class="btn btn-primary">Voir les matchs</a>
-                    <!-- <p><strong>Admin :</strong> <?= !empty($tournoi['admin_nom']) ? htmlspecialchars($tournoi['admin_nom']) : 'Non défini' ?></p> -->
+                    <!-- Lien vers les matchs du tournoi -->
+                    <?php if (strtolower($tournoi['nom']) == 'botola pro') : ?>
+                      <a href="botola_matches.php?tournoi_id=<?= $tournoi['id'] ?>" class="btn btn-primary">Voir les matchs</a>
+                      <?php else : ?>
+                          <a href="kass_l3arch_matches.php?tournoi_id=<?= $tournoi['id'] ?>" class="btn btn-primary">Voir les matchs</a>
+                      <?php endif; ?>
+
                     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#viewTournoiModal<?= $tournoi['id'] ?>">Voir Détails</button>
                 </div>
             </div>
+
+
 
             <!-- Modal Détails Tournoi -->
             <div class="modal fade" id="viewTournoiModal<?= $tournoi['id'] ?>" tabindex="-1" aria-labelledby="viewTournoiModalLabel" aria-hidden="true">

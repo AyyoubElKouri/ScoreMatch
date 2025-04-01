@@ -2,40 +2,46 @@
 session_start();
 require_once '../config/database.php';
 
-// Vérifiez si le tournoi_id est 2 pour Kass L3arch
-if (isset($_GET['tournoi_id']) && $_GET['tournoi_id'] == 2) {
-    // C'est un match du tournoi Kass L3arch, on peut charger les matchs ici
-    $tournoi_id = 2;
-} else {
-    // Si ce n'est pas Kass L3arch, on redirige ou on affiche une erreur
-    echo "Vous essayez d'accéder à un tournoi incorrect.";
-    exit(); // Ou rediriger vers une page d'erreur
+// Récupérer la date si présente dans l'URL pour filtrer les matchs par date
+$date_filter = isset($_GET['date']) ? $_GET['date'] : null;
+
+// Requête SQL pour récupérer les résultats de Botola (en supposant que tournoi_id = 1 pour Botola)
+$query = "SELECT m.*, 
+                 e1.nom AS equipe1, e2.nom AS equipe2, 
+                 e1.logo AS logo1, e2.logo AS logo2,
+                 m.score_equipe1, m.score_equipe2,
+                 DATE(m.date_match) AS match_date
+          FROM matches m
+          JOIN equipes e1 ON m.equipe1_id = e1.id
+          JOIN equipes e2 ON m.equipe2_id = e2.id
+          WHERE m.tournoi_id = 1";  // Filtrage pour Botola
+
+// Si une date est spécifiée dans l'URL, filtrer les résultats par cette date
+if ($date_filter) {
+    $query .= " AND DATE(m.date_match) = :date_filter";
 }
 
-// Récupération des matchs pour le tournoi Kass L3arch
-$query = "SELECT m.*, 
-                  e1.nom AS equipe1, e2.nom AS equipe2, 
-                  e1.logo AS logo1, e2.logo AS logo2,
-                  m.score_equipe1, m.score_equipe2,
-                  DATE(m.date_match) AS match_date
-           FROM matches m
-           JOIN equipes e1 ON m.equipe1_id = e1.id
-           JOIN equipes e2 ON m.equipe2_id = e2.id
-           WHERE m.tournoi_id = :tournoi_id";  
+$query .= " ORDER BY m.date_match DESC"; // Trier les résultats par date (du plus récent au plus ancien)
 
 $stmt = $pdo->prepare($query);
-$stmt->bindParam(':tournoi_id', $tournoi_id);
+
+// Si un filtre de date est utilisé, lier la date à la requête
+if ($date_filter) {
+    $stmt->bindParam(':date_filter', $date_filter);
+}
+
+// Exécuter la requête
 $stmt->execute();
+
+// Récupérer les résultats
 $matchs_resultats = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
-
-
 
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Résultats des Matchs - Kass L3arch</title>
+    <title>Résultats des Matchs - Botola</title>
     <link rel="stylesheet" href="../bootstrap-5.3.3-dist/css/bootstrap.css">
     <link rel="stylesheet" href="../public/assets/css/resultats.css">
 </head>
@@ -43,7 +49,7 @@ $matchs_resultats = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <?php include 'navbar.php'; ?>
 
 <div class="container mt-4">
-    <h2 class="text-center">Historique des Résultats - Kass L3arch</h2>
+    <h2 class="text-center">Historique des Résultats - Botola</h2>
     
     <!-- Sélection de la date -->
     <form method="GET" id="dateFilterForm" class="text-center mb-3">
@@ -73,10 +79,6 @@ $matchs_resultats = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <div class="match-info">
                     <span class="match-date">
                         <?= substr($match['heure'], 0, 5); ?>
-                    </span>
-                    <span class="match-tour">
-                        <!-- Affichage du tour (ex: Quart de Final, Demi Final, etc.) -->
-                        <?= htmlspecialchars($match['tour']) ?>
                     </span>
                 </div>
                 <div class="match-content">
