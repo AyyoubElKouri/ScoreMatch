@@ -12,7 +12,7 @@ if (isset($_GET['tournoi_id']) && $_GET['tournoi_id'] == 2) {
     exit(); // Ou rediriger vers une page d'erreur
 }
 
-// Récupération des matchs pour le tournoi Kass L3arch
+// Récupérer les matchs du tournoi Kass L3arch
 $query = "SELECT m.*, 
                   e1.nom AS equipe1, e2.nom AS equipe2, 
                   e1.logo AS logo1, e2.logo AS logo2,
@@ -21,12 +21,14 @@ $query = "SELECT m.*,
            FROM matches m
            JOIN equipes e1 ON m.equipe1_id = e1.id
            JOIN equipes e2 ON m.equipe2_id = e2.id
-           WHERE m.tournoi_id = :tournoi_id";  
+           WHERE m.tournoi_id = :tournoi_id
+           AND e1.elimine = 0 AND e2.elimine = 0";  // Exclure les équipes éliminées
 
 $stmt = $pdo->prepare($query);
 $stmt->bindParam(':tournoi_id', $tournoi_id);
 $stmt->execute();
 $matchs_resultats = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 ?>
 
 

@@ -106,8 +106,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
     </div>
 </div>
 
-
-    <!-- Bouton Ajouter -->
      <!-- Bouton Ajouter -->
 <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#addTournoiModal">+ Ajouter un Tournoi</button>
 
@@ -181,11 +179,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
     </div>
 </div>
 
-<!-- Scripts -->
+
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 $(document).ready(function(){
+    
     // Ouvrir le modal Modifier avec les données actuelles
     $(".editTournoiBtn").click(function(){
         $("#editTournoiId").val($(this).data("id"));

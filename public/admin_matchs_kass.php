@@ -3,22 +3,23 @@
 session_start();
 require_once '../config/database.php';
 
-// Ajouter la fonction de redirection
+
 function redirect($url) {
     echo "<script>window.location.replace('$url');</script>";
     exit();
 }
 
-// Vérification du rôle admin_global
+
+
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin_tournoi') {
     header("Location: index.php");
     exit();
 }
 
-// Récupération des équipes pour le formulaire
-$equipes = $pdo->query("SELECT id, nom FROM equipes ORDER BY nom")->fetchAll(PDO::FETCH_ASSOC);
 
-// Récupération des matchs pour affichage
+$equipes = $pdo->query("SELECT id, nom FROM equipes WHERE elimine = 0 ORDER BY nom")->fetchAll(PDO::FETCH_ASSOC);
+
+
 $matchs = $pdo->prepare("SELECT m.id, m.equipe1_id, m.equipe2_id, m.stade_id, 
                                 e1.nom AS equipe1, e2.nom AS equipe2, 
                                 s.nom AS stade, m.date_match, m.heure, m.arbitre_id, 
@@ -32,8 +33,6 @@ $matchs = $pdo->prepare("SELECT m.id, m.equipe1_id, m.equipe2_id, m.stade_id,
                          ORDER BY m.date_match DESC");
 $matchs->execute();
 $matchs = $matchs->fetchAll(PDO::FETCH_ASSOC);
-
-
 
 
 // Récupération des arbitres pour l'affectation
@@ -148,7 +147,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['modifier_match'])) {
 
 
 ?>
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -254,14 +252,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['modifier_match'])) {
                <label>Arbitre</label>
 <select name="arbitre_id" class="form-control">
     <option value="">-- Sélectionner --</option>
-    <?php foreach ($arbitres as $arbitre) : ?>
-        <option value="<?= $arbitre['id'] ?>" <?= (isset($match['arbitre_id']) && $arbitre['id'] == $match['arbitre_id']) ? 'selected' : '' ?>>
-            <?= htmlspecialchars($arbitre['nom']) ?>
-        </option>
-    <?php endforeach; ?>
-</select>
-    
-</div>
+       <?php foreach ($arbitres as $arbitre) : ?>
+          <option value="<?= $arbitre['id'] ?>" <?= (isset($match['arbitre_id']) && $arbitre['id'] == $match['arbitre_id']) ? 'selected' : '' ?>>
+             <?= htmlspecialchars($arbitre['nom']) ?>
+         </option>
+       <?php endforeach; ?>
+    </select>
+    </div>
           <div class="modal-footer">
                         <button type="submit" name="modifier_match" class="btn btn-success">Enregistrer</button>
                     </div>
@@ -316,21 +313,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['modifier_match'])) {
                     </select>            
 
                     <label>Arbitre</label>
-<select name="arbitre_id" class="form-control">
-    <option value="">-- Sélectionner --</option>
-    <?php foreach ($arbitres as $arbitre) : ?>
-        <option value="<?= $arbitre['id'] ?>"><?= htmlspecialchars($arbitre['nom']) ?></option>
-    <?php endforeach; ?>
-</select>
+    <select name="arbitre_id" class="form-control">
+        <option value="">-- Sélectionner --</option>
+          <?php foreach ($arbitres as $arbitre) : ?>
+         <option value="<?= $arbitre['id'] ?>"><?= htmlspecialchars($arbitre['nom']) ?></option>
+        <?php endforeach; ?>
+    </select>
 
   <!-- Sélectionner le tour -->
-                <label>Tour du Match</label>
-                    <select name="tour" class="form-control" required>
+             <label>Tour du Match</label>
+                <select name="tour" class="form-control" required>
                         <option value="">-- Sélectionner --</option>
                         <option value="Quart de Finale">Quart de Finale</option>
                         <option value="Demi-Finale">Demi-Finale</option>
                         <option value="Finale">Finale</option>
-                    </select>
+                </select>
     </div>
 
                 <div id="joueursSelection" style="display:none;">

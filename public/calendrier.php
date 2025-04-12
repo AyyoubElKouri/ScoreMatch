@@ -44,9 +44,13 @@ $matchs = $pdo->query("
         <h2 class="mb-4 text-center">Matchs de Botola Pro</h2>
         <div class="match-list">
             <?php foreach ($matchs as $match) : ?>
+                
+                <a href="match_details.php?id=<?= $match['id'] ?>" class="match-card-link">
+
                 <div class="match-card" data-match-id="<?= $match['id'] ?>">
 
                     <!-- Date et Heure -->
+
                     <div class="match-info">
                         <?php
                             if (isset($match['match_date'])) {

@@ -1,6 +1,8 @@
 <?php
 session_start();
-require_once '../config/database.php'; // Connexion à la base de données
+require_once '../config/database.php';
+
+header('Content-Type: application/json'); // Ajouter l'en-tête JSON
 
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['status' => 'error', 'message' => 'Vous devez être connecté.']);
@@ -8,44 +10,40 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $user_id = $_SESSION['user_id'];
-$type = $_POST['type']; // "match", "joueur", ou "equipe"
-$id = $_POST['id']; // ID du match, du joueur ou de l'équipe
+$type = $_POST['type'];
+$id = $_POST['id'];
 
-// Debug
-var_dump($_POST); // Pour vérifier les données envoyées
-error_log(print_r($_POST, true)); // Log les données
-
-// Vérifier si l'abonnement existe déjà
- if ($type == 'joueur') {
-    // Vérifier si l'utilisateur est déjà abonné à ce joueur
-    $stmt = $pdo->prepare("SELECT * FROM abonnements WHERE user_id = ? AND joueur_id = ?");
-    $stmt->execute([$user_id, $id]);
-
-    if ($stmt->rowCount() == 0) {
-        // Ajouter l'abonnement pour le joueur
-        $stmt = $pdo->prepare("INSERT INTO abonnements (user_id, joueur_id) VALUES (?, ?)");
+try {
+    if ($type == 'joueur') {
+        $stmt = $pdo->prepare("SELECT * FROM abonnements WHERE user_id = ? AND joueur_id = ?");
         $stmt->execute([$user_id, $id]);
-
-        echo json_encode(['status' => 'success', 'message' => '✅ Vous êtes maintenant abonné au joueur.']);
-    } else {
-        echo json_encode(['status' => 'warning', 'message' => '⚠️ Vous êtes déjà abonné à ce joueur.']);
-    }
-} elseif ($type == 'equipe') {
-    // Vérifier si l'utilisateur est déjà abonné à cette équipe
-    $stmt = $pdo->prepare("SELECT * FROM abonnements WHERE user_id = ? AND equipe_id = ?");
-    $stmt->execute([$user_id, $id]);
-
-    if ($stmt->rowCount() == 0) {
-        // Ajouter l'abonnement pour l'équipe
-        $stmt = $pdo->prepare("INSERT INTO abonnements (user_id, equipe_id) VALUES (?, ?)");
+        
+        if ($stmt->rowCount() == 0) {
+            $stmt = $pdo->prepare("INSERT INTO abonnements (user_id, joueur_id, date_abonnement) VALUES (?, ?, NOW())");
+            $stmt->execute([$user_id, $id]);
+            echo json_encode(['status' => 'success', 'message' => '✅ Abonnement au joueur réussi !']);
+        } else {
+            echo json_encode(['status' => 'warning', 'message' => '⚠️ Vous êtes déjà abonné à ce joueur']);
+        }
+        
+    } elseif ($type == 'equipe') {
+        $stmt = $pdo->prepare("SELECT * FROM abonnements WHERE user_id = ? AND equipe_id = ?");
         $stmt->execute([$user_id, $id]);
-
-        echo json_encode(['status' => 'success', 'message' => '✅ Vous êtes maintenant abonné à l\'équipe.']);
+        
+        if ($stmt->rowCount() == 0) {
+            $stmt = $pdo->prepare("INSERT INTO abonnements (user_id, equipe_id, date_abonnement) VALUES (?, ?, NOW())");
+            $stmt->execute([$user_id, $id]);
+            echo json_encode(['status' => 'success', 'message' => '✅ Abonnement à l\'équipe réussi !']);
+        } else {
+            echo json_encode(['status' => 'warning', 'message' => '⚠️ Vous êtes déjà abonné à cette équipe']);
+        }
+        
     } else {
-        echo json_encode(['status' => 'warning', 'message' => '⚠️ Vous êtes déjà abonné à cette équipe.']);
+        echo json_encode(['status' => 'error', 'message' => 'Type d\'abonnement invalide']);
     }
-} else {
-    echo json_encode(['status' => 'error', 'message' => 'Type d\'abonnement invalide.']);
+} catch (PDOException $e) {
+    error_log("Erreur SQL: " . $e->getMessage());
+    echo json_encode(['status' => 'error', 'message' => 'Erreur technique. Veuillez réessayer.']);
 }
 
 exit();

@@ -200,6 +200,7 @@ body.dark-mode {
                     <?php if ($userRole === 'user'): ?>
                         <li class="nav-item"><a class="nav-link" href="vote_match.php">Voter un match</a></li>
                         <li class="nav-item"><a class="nav-link" href="discussion.php">Discuter un match</a></li>
+                        <li class="nav-item"><a class="nav-link" href="chat.php">chat</a></li>
                         <li class="nav-item"><a class="nav-link" href="profile.php">Mon Profil</a></li>
                     <?php endif; ?>
                     <li class="nav-item"><a class="nav-link btn btn-danger text-white" href="logout.php">Déconnexion</a></li>

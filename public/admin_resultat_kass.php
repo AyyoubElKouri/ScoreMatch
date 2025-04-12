@@ -25,55 +25,81 @@ function getJoueursParEquipe($pdo, $equipe_id) {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
+
 // Ajouter un score et les statistiques du match
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ajouter_score'])) {
-    $match_id = $_POST['match_id'];
-    $score_equipe1 = $_POST['score_equipe1'];
-    $score_equipe2 = $_POST['score_equipe2'];
+  $match_id = $_POST['match_id'];
 
-    // Préparer la requête de mise à jour
-    $stmt = $pdo->prepare("UPDATE matches SET 
-        score_equipe1 = ?, score_equipe2 = ?,
-        possession_equipe1 = ?, possession_equipe2 = ?, 
-        tirs_equipe1 = ?, tirs_equipe2 = ?, 
-        tirs_cadres_equipe1 = ?, tirs_cadres_equipe2 = ?, 
-        corners_equipe1 = ?, corners_equipe2 = ?, 
-        fautes_equipe1 = ?, fautes_equipe2 = ?, 
-        passes_equipe1 = ?, passes_equipe2 = ?, 
-        interventions_gardien_equipe1 = ?, interventions_gardien_equipe2 = ?, 
-        cartons_jaunes_equipe1 = ?, cartons_jaunes_equipe2 = ?, 
-        cartons_rouges_equipe1 = ?, cartons_rouges_equipe2 = ?, 
-        touches_equipe1 = ?, touches_equipe2 = ?, 
-        tirs_bloques_equipe1 = ?, tirs_bloques_equipe2 = ?, 
-        penaltys_concedes_equipe1 = ?, penaltys_concedes_equipe2 = ?, 
-        penaltys_reussis_equipe1 = ?, penaltys_reussis_equipe2 = ?, 
-        hors_jeu_equipe1 = ?, hors_jeu_equipe2 = ? 
-        WHERE id = ?");
+  // Récupérer les détails du match spécifique
+  $stmt = $pdo->prepare("SELECT m.*, e1.nom AS equipe1, e2.nom AS equipe2, e1.id AS equipe1_id, e2.id AS equipe2_id
+                         FROM matches m
+                         JOIN equipes e1 ON m.equipe1_id = e1.id
+                         JOIN equipes e2 ON m.equipe2_id = e2.id
+                         WHERE m.id = ?");
+  $stmt->execute([$match_id]);
+  $match = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Exécuter la requête avec les valeurs du formulaire
-    $stmt->execute([ 
-        $score_equipe1, $score_equipe2, 
-        $_POST['possession_equipe1'], $_POST['possession_equipe2'],
-        $_POST['tirs_equipe1'], $_POST['tirs_equipe2'],
-        $_POST['tirs_cadres_equipe1'], $_POST['tirs_cadres_equipe2'],
-        $_POST['corners_equipe1'], $_POST['corners_equipe2'],
-        $_POST['fautes_equipe1'], $_POST['fautes_equipe2'],
-        $_POST['passes_equipe1'], $_POST['passes_equipe2'],
-        $_POST['interventions_gardien_equipe1'], $_POST['interventions_gardien_equipe2'],
-        $_POST['cartons_jaunes_equipe1'], $_POST['cartons_jaunes_equipe2'],
-        $_POST['cartons_rouges_equipe1'], $_POST['cartons_rouges_equipe2'],
-        $_POST['touches_equipe1'], $_POST['touches_equipe2'],
-        $_POST['tirs_bloques_equipe1'], $_POST['tirs_bloques_equipe2'],
-        $_POST['penaltys_concedes_equipe1'], $_POST['penaltys_concedes_equipe2'],
-        $_POST['penaltys_reussis_equipe1'], $_POST['penaltys_reussis_equipe2'],
-        $_POST['hors_jeu_equipe1'], $_POST['hors_jeu_equipe2'],
-        $match_id
-    ]);
+  // Variables des scores de chaque équipe
+  $score_equipe1 = $_POST['score_equipe1'];
+  $score_equipe2 = $_POST['score_equipe2'];
 
-    // Redirection après l'enregistrement
-    echo "<script>setTimeout(() => { window.location.href = 'admin_resultat_kass.php'; }, 500);</script>";
-    exit();
+  // Déterminer l'équipe perdante
+  $equipe_perdante = null;
+  if ($score_equipe1 > $score_equipe2) {
+      $equipe_perdante = $match['equipe2_id']; // Équipe 2 perd
+  } elseif ($score_equipe2 > $score_equipe1) {
+      $equipe_perdante = $match['equipe1_id']; // Équipe 1 perd
+  }
+
+  // Marquer l'équipe perdante comme éliminée
+  if ($equipe_perdante !== null) {
+      $stmt = $pdo->prepare("UPDATE equipes SET elimine = 1 WHERE id = ?");
+      $stmt->execute([$equipe_perdante]);
+  }
+
+  // Mettre à jour les résultats du match
+  $stmt = $pdo->prepare("UPDATE matches SET 
+      score_equipe1 = ?, score_equipe2 = ?,
+      possession_equipe1 = ?, possession_equipe2 = ?, 
+      tirs_equipe1 = ?, tirs_equipe2 = ?, 
+      tirs_cadres_equipe1 = ?, tirs_cadres_equipe2 = ?, 
+      corners_equipe1 = ?, corners_equipe2 = ?, 
+      fautes_equipe1 = ?, fautes_equipe2 = ?, 
+      passes_equipe1 = ?, passes_equipe2 = ?, 
+      interventions_gardien_equipe1 = ?, interventions_gardien_equipe2 = ?, 
+      cartons_jaunes_equipe1 = ?, cartons_jaunes_equipe2 = ?, 
+      cartons_rouges_equipe1 = ?, cartons_rouges_equipe2 = ?, 
+      touches_equipe1 = ?, touches_equipe2 = ?, 
+      tirs_bloques_equipe1 = ?, tirs_bloques_equipe2 = ?, 
+      penaltys_concedes_equipe1 = ?, penaltys_concedes_equipe2 = ?, 
+      penaltys_reussis_equipe1 = ?, penaltys_reussis_equipe2 = ?, 
+      hors_jeu_equipe1 = ?, hors_jeu_equipe2 = ? 
+      WHERE id = ?");
+  $stmt->execute([ 
+      $score_equipe1, $score_equipe2, 
+      $_POST['possession_equipe1'], $_POST['possession_equipe2'],
+      $_POST['tirs_equipe1'], $_POST['tirs_equipe2'],
+      $_POST['tirs_cadres_equipe1'], $_POST['tirs_cadres_equipe2'],
+      $_POST['corners_equipe1'], $_POST['corners_equipe2'],
+      $_POST['fautes_equipe1'], $_POST['fautes_equipe2'],
+      $_POST['passes_equipe1'], $_POST['passes_equipe2'],
+      $_POST['interventions_gardien_equipe1'], $_POST['interventions_gardien_equipe2'],
+      $_POST['cartons_jaunes_equipe1'], $_POST['cartons_jaunes_equipe2'],
+      $_POST['cartons_rouges_equipe1'], $_POST['cartons_rouges_equipe2'],
+      $_POST['touches_equipe1'], $_POST['touches_equipe2'],
+      $_POST['tirs_bloques_equipe1'], $_POST['tirs_bloques_equipe2'],
+      $_POST['penaltys_concedes_equipe1'], $_POST['penaltys_concedes_equipe2'],
+      $_POST['penaltys_reussis_equipe1'], $_POST['penaltys_reussis_equipe2'],
+      $_POST['hors_jeu_equipe1'], $_POST['hors_jeu_equipe2'],
+      $match_id
+  ]);
+
+  echo "<script>setTimeout(() => { window.location.href = 'admin_resultat_kass.php'; }, 500);</script>";
+  exit();
 }
+
+
+
 
 // Ajouter un événement (but ou carton)
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ajouter_evenement'])) {
@@ -96,7 +122,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ajouter_evenement'])) 
     $equipe_id = $stmt->fetchColumn() ?: NULL;
 
     if ($joueur_id && $minute && $equipe_id && $type_event) {
-      
+
         // Si aucun carton n'est sélectionné, ne pas insérer de minute_carton
         if ($carton == "Aucun") {
             $carton = NULL;
@@ -119,6 +145,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ajouter_evenement'])) 
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="fr">
@@ -229,7 +256,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ajouter_evenement'])) 
                         <div class="col">
                             <input type="number" name="penaltys_concedes_equipe2" class="form-control" placeholder="Équipe 2" required>
                         </div>
+                    </div>
 
+                    <!-- Pénaltys réussis -->
 
 
                   <label>Pénaltys réussis</label>

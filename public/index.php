@@ -1,9 +1,8 @@
 <?php
 session_start();
 
-// Vérifier si l'utilisateur est connecté
-$isLoggedIn = isset($_SESSION['user_id']);
-$userRole = isset($_SESSION['role']) ? $_SESSION['role'] : 'guest'; // 'guest' par défaut
+date_default_timezone_set('Africa/Casablanca'); // Ajoutez cette ligne
+
 
 require_once '../config/database.php';
 
@@ -28,8 +27,6 @@ $matchs_botola = $stmtBotola->fetchAll(PDO::FETCH_ASSOC);
 
 
 
-
-
 //  Récupérer les matchs du jour pour Kass L3arch (tournoi_id = 2)
 $queryKassL3arch = "SELECT m.date_match, m.heure, m.id, e1.logo AS logo1, e2.logo AS logo2 
                     FROM matches m
@@ -37,7 +34,7 @@ $queryKassL3arch = "SELECT m.date_match, m.heure, m.id, e1.logo AS logo1, e2.log
                     JOIN equipes e2 ON m.equipe2_id = e2.id
                     WHERE DATE(m.date_match) = ? 
                     AND m.tournoi_id = 2 
-                    AND (m.score_equipe1 IS NULL OR m.score_equipe2 IS NULL)";
+                    AND (m.score_equipe1 IS NULL OR m.score_equipe2 IS NULL OR m.score_equipe1 = 0 OR m.score_equipe2 = 0)";
 
 $stmtKassL3arch = $pdo->prepare($queryKassL3arch);
 $stmtKassL3arch->execute([$today]);

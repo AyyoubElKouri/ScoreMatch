@@ -119,8 +119,6 @@ $tournois = $pdo->query("
                 </div>
             </div>
 
-
-
             <!-- Modal Détails Tournoi -->
             <div class="modal fade" id="viewTournoiModal<?= $tournoi['id'] ?>" tabindex="-1" aria-labelledby="viewTournoiModalLabel" aria-hidden="true">
                 <div class="modal-dialog">

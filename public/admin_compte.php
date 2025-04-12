@@ -8,7 +8,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin_global') {
     exit();
 }
 
-// ✅ Récupérer les comptes admin_tournoi avec leur tournoi associé
+// Récupérer les comptes admin_tournoi avec leur tournoi associé
 $admins = $pdo->query("
     SELECT users.id, users.nom, users.email, users.date_inscription, tournois.nom AS tournoi_nom, users.tournoi_id 
     FROM users 
@@ -16,10 +16,10 @@ $admins = $pdo->query("
     WHERE users.role = 'admin_tournoi'
 ")->fetchAll(PDO::FETCH_ASSOC);
 
-// ✅ Récupérer les tournois disponibles
+// Récupérer les tournois disponibles
 $tournois = $pdo->query("SELECT id, nom FROM tournois")->fetchAll(PDO::FETCH_ASSOC);
 
-// ✅ Ajouter un admin tournoi
+// Ajouter un admin tournoi
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ajouter_admin'])) {
     $nom = $_POST['nom'];
     $email = $_POST['email'];
@@ -36,7 +36,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ajouter_admin'])) {
     }
 }
 
-// ✅ Modifier un admin tournoi
+// Modifier un admin tournoi
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['modifier_admin'])) {
     $id = $_POST['admin_id'];
     $nom = $_POST['nom'];
@@ -52,7 +52,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['modifier_admin'])) {
     }
 }
 
-// ✅ Supprimer un admin tournoi
+// Supprimer un admin tournoi
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['supprimer_admin'])) {
     $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
     $stmt->execute([$_POST['admin_id']]);
@@ -82,16 +82,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['supprimer_admin'])) {
         <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addAdminModal">+ Ajouter un Admin</button>
     </div>
 
-    <!-- ✅ Tableau des admins tournoi -->
+    <!-- Tableau des admins tournoi -->
     <table class="table table-striped table-hover">
         <thead class="table-dark">
             <tr>
+                
                 <th>#</th>
                 <th>Nom</th>
                 <th>Email</th>
                 <th>Date d'inscription</th>
                 <th>Tournoi Associé</th>
                 <th>Actions</th>
+
             </tr>
         </thead>
         <tbody>
@@ -111,7 +113,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['supprimer_admin'])) {
                     </td>
                 </tr>
 
-                <!-- ✅ Modal Modifier Admin -->
+                <!-- Modal Modifier Admin -->
                 <div class="modal fade" id="editAdminModal<?= $admin['id'] ?>" tabindex="-1">
                     <div class="modal-dialog">
                         <div class="modal-content">
@@ -148,7 +150,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['supprimer_admin'])) {
     </table>
 </div>
 
-<!-- ✅ Modal Ajouter un Admin -->
+<!-- Modal Ajouter un Admin -->
 <div class="modal fade" id="addAdminModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -166,12 +168,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['supprimer_admin'])) {
                     <input type="password" name="password" class="form-control" required>
                     <label>Tournoi</label>
                     <label>Tournoi</label>
-<select name="tournoi_id" class="form-control" required>
-    <option value="">-- Sélectionner --</option>
-    <?php foreach ($tournois as $tournoi) : ?>
-        <option value="<?= $tournoi['id'] ?>"><?= htmlspecialchars($tournoi['nom']) ?></option>
-    <?php endforeach; ?>
-</select>
+                <select name="tournoi_id" class="form-control" required>
+
+                <option value="">-- Sélectionner --</option>
+                <?php foreach ($tournois as $tournoi) : ?>
+                <option value="<?= $tournoi['id'] ?>"><?= htmlspecialchars($tournoi['nom']) ?></option>
+                <?php endforeach; ?>
+                </select>
 
                 </div>
                 <div class="modal-footer">

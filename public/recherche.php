@@ -36,7 +36,10 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Recherche</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
     <link rel="stylesheet" href="../bootstrap-5.3.3-dist/css/bootstrap.css">
+
 </head>
 <body class="<?= isset($_COOKIE['theme']) && $_COOKIE['theme'] === 'dark' ? 'dark-mode' : '' ?>">
 
@@ -108,28 +111,39 @@ try {
 
 $(document).ready(function() {
     $(".follow-btn").click(function() {
-        var user_id = <?php echo $_SESSION['user_id']; ?>; // ID de l'utilisateur connecté
-        var type = $(this).data('type'); // "joueur" ou "equipe"
-        var id = $(this).data('id'); // ID du joueur ou de l'équipe
+        var btn = $(this);
+        var type = btn.data('type');
+        var id = btn.data('id');
 
         $.ajax({
             type: "POST",
-            url: "ajouter_abonnement.php", // Le fichier qui gère l'abonnement
+            url: "ajouter_abonnement.php",
             data: { 
-                user_id: user_id, 
                 type: type, 
                 id: id 
             },
-            dataType: "json", // Attendez une réponse JSON
+            dataType: "json",
             success: function(response) {
+                Swal.fire({
+                    icon: response.status,
+                    title: response.status.toUpperCase(),
+                    text: response.message,
+                    confirmButtonColor: '#3085d6',
+                });
+
                 if (response.status === 'success') {
-                    alert(response.message); // Afficher un message de confirmation
-                } else {
-                    alert(response.message); // Afficher un message d'erreur si besoin
+                    btn.prop('disabled', true)
+                       .removeClass('btn-primary btn-secondary')
+                       .addClass('btn-success')
+                       .html('✓ Abonné');
                 }
             },
-            error: function() {
-                alert("Erreur lors de l'abonnement.");
+            error: function(xhr) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erreur',
+                    text: 'Erreur technique : ' + xhr.responseText
+                });
             }
         });
     });

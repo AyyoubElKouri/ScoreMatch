@@ -123,16 +123,8 @@ function getSchemaTactique($joueurs) {
         "attaque" => $count["Ailier gauche"] + $count["Ailier droit"] + $count["Attaquant"]
     ];
 }
-
-
-
-
-
   
 ?>
-
-
-
 
 
 <!DOCTYPE html>
@@ -267,6 +259,82 @@ function getSchemaTactique($joueurs) {
     visibility: hidden;
     width: 100px;
 }
+
+/* Style pour les logos */
+.team-logo {
+    max-width: 150px;
+    height: auto;
+    margin: 1rem auto;
+    transition: transform 0.3s ease;
+}
+
+.team-logo:hover {
+    transform: scale(1.05);
+}
+
+/* Style de la carte principale */
+.main-match-card {
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Style du score */
+.score-display {
+    font-size: 3.5rem;
+    font-weight: bold;
+    color: #2c3e50;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Style des statistiques */
+.stats-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.stat-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: bold;
+}
+
+/* Style des événements */
+.event-card {
+    border-left: 4px solid;
+    transition: transform 0.2s ease;
+}
+
+.event-card:hover {
+    transform: translateX(5px);
+}
+
+.goal-event {
+    border-color: #28a745;
+    background-color: rgba(40, 167, 69, 0.1);
+}
+
+.yellow-card {
+    border-color: #ffc107;
+    background-color: rgba(255, 193, 7, 0.1);
+}
+
+.red-card {
+    border-color: #dc3545;
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .score-display {
+        font-size: 2.5rem;
+    }
+    
+    .team-logo {
+        max-width: 100px;
+    }
+}
+</style>
 
 
 
@@ -464,8 +532,6 @@ $schema_equipe2 = getSchemaTactique($joueurs_equipe2);
         </div>
     </div>
 </section>
-
-
 
 
 <!-- Pied de page -->
